@@ -259,7 +259,7 @@ def create_generators(args, preprocess_image):
 
         validation_generator = CocoGenerator(
             args.coco_path,
-            'validation',
+            'validation_wo_occlusion',
             shuffle_groups=False,
             **common_args
         )
