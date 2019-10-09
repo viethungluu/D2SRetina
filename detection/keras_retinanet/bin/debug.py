@@ -19,11 +19,7 @@ limitations under the License.
 import argparse
 import os
 import sys
-import numpy as np
-import tifffile as tiff
-
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+import cv2
 
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
@@ -98,7 +94,6 @@ def create_generator(args):
         generator = CSVGenerator(
             args.annotations,
             args.classes,
-            mixup_file=args.mixup_path,
             transform_generator=transform_generator,
             visual_effect_generator=visual_effect_generator,
             image_min_side=args.image_min_side,
@@ -169,8 +164,6 @@ def parse_args(args):
     csv_parser.add_argument('annotations', help='Path to CSV file containing annotations for evaluation.')
     csv_parser.add_argument('classes',     help='Path to a CSV file containing class label mapping.')
 
-    parser.add_argument('--mixup-path', help='Path to CSV file containing images used as mixup', default=None)
-    parser.add_argument('--num_images', help='Number of images to be shown.', type=int, default=12)
     parser.add_argument('--no-resize', help='Disable image resizing.', dest='resize', action='store_false')
     parser.add_argument('--anchors', help='Show positive anchors on the image.', action='store_true')
     parser.add_argument('--display-name', help='Display image name on the bottom left corner.', action='store_true')
@@ -191,13 +184,10 @@ def run(generator, args, anchor_params):
         args: parseargs args object.
     """
     # display images, one at a time
-    plt.figure(figsize=(20, 10))
-    columns = 2
-    num_images = args.num_images if args.num_images < generator.size() else generator.size()
-    for i in range(num_images):
+    i = 0
+    while True:
         # load the data
-        image   = generator.load_rgb_image(i)
-        
+        image       = generator.load_image(i)
         annotations = generator.load_annotations(i)
         if len(annotations['labels']) > 0 :
             # apply random transformations
@@ -230,11 +220,24 @@ def run(generator, args, anchor_params):
             if args.display_name:
                 draw_caption(image, [0, image.shape[0]], os.path.basename(generator.image_path(i)))
 
-        ax = plt.subplot(num_images // columns + 1, columns, i + 1)
-        ax.imshow(image)
+        cv2.imshow('Image', image)
+        key = cv2.waitKey()
 
-    plt.tight_layout()
-    plt.savefig("debug.png")
+        # note that the right and left keybindings are probably different for windows
+        # press right for next image and left for previous (linux)
+        # if you run macOS, it might be convenient using "n" and "m" key (key == 110 and key == 109)
+
+        if key == 83:
+            i = (i + 1) % generator.size()
+        if key == 81:
+            i -= 1
+            if i < 0:
+                i = generator.size() - 1
+
+        # press q or Esc to quit
+        if (key == ord('q')) or (key == 27):
+            return False
+
     return True
 
 
@@ -258,6 +261,9 @@ def main(args=None):
     anchor_params = None
     if args.config and 'anchor_parameters' in args.config:
         anchor_params = parse_anchor_parameters(args.config)
+
+    # create the display window
+    cv2.namedWindow('Image', cv2.WINDOW_NORMAL)
 
     run(generator, args, anchor_params=anchor_params)
 

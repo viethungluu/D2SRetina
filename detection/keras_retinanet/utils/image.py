@@ -18,26 +18,9 @@ from __future__ import division
 import numpy as np
 import cv2
 from PIL import Image
-import tifffile as tiff
 
 from .transform import change_transform_origin
 
-def read_image(path):
-    image     = tiff.imread(path)
-    if len(image.shape) == 2:
-        image     = np.expand_dims(image, axis=2)
-        image     = np.repeat(image, 3, axis=2)
-    
-    # Planet image hase two formats RGB (3 channels) or BGRP (4 channels)
-    # if 3 channels, reverse to BGR format
-    reverse = False
-    if image.shape[2] == 3:
-        reverse = True
-    image = image[..., :3]
-    if reverse:
-        image = image[..., ::-1].copy()
-
-    return image
 
 def read_image_bgr(path):
     """ Read an image in BGR format.
@@ -46,24 +29,9 @@ def read_image_bgr(path):
         path: Path to the image.
     """
     # We deliberately don't use cv2.imread here, since it gives no feedback on errors while reading the image.
-    # read images
-    image = tiff.imread(path)
+    image = np.asarray(Image.open(path).convert('RGB'))
+    return image[:, :, ::-1].copy()
 
-    # Planet image hase two formats RGB (3 channels) or BGRP (4 channels)
-    # if 3 channels, reverse to BGR format for visualization (OpenCV is BGR)
-    reverse = False
-    if image.shape[2] == 3:
-        reverse = True
-    image = image[..., :3]
-    if reverse:
-        image = image[..., ::-1].copy()
-
-    # scale to uint8
-    image = image.astype(np.float32)
-    image = image / np.max(np.max(image, axis=0), axis=0) * 255
-    image = image.astype(np.uint8)
-
-    return image
 
 def preprocess_image(x, mode='caffe'):
     """ Preprocess an image by subtracting the ImageNet mean.
@@ -79,26 +47,18 @@ def preprocess_image(x, mode='caffe'):
         The input with the ImageNet mean subtracted.
     """
     # mostly identical to "https://github.com/keras-team/keras-applications/blob/master/keras_applications/imagenet_utils.py"
-    # WE ASSUME BGR ALREADY
+    # except for converting RGB -> BGR since we assume BGR already
 
     # covert always to float32 to keep compatibility with opencv
     x = x.astype(np.float32)
 
-    # for TerraSAR-X
-    # x -= 124.4022
-    # x /= 148.3667
-    
-    # for Planet
-    x -= [6646.1636, 5853.3188, 4089.8762]
-    x /= [1980.1919, 1786.3191, 1544.9279]
-
-    # if mode == 'tf':
-    #     x /= 124.4022
-    #     x -= 1.
-    # elif mode == 'caffe':
-    #     x[..., 0] -= 0
-    #     x[..., 1] -= 0
-    #     x[..., 2] -= 0
+    if mode == 'tf':
+        x /= 127.5
+        x -= 1.
+    elif mode == 'caffe':
+        x[..., 0] -= 103.939
+        x[..., 1] -= 116.779
+        x[..., 2] -= 123.68
 
     return x
 

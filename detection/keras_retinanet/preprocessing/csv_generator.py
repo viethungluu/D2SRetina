@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 from .generator import Generator
-from ..utils.image import read_image_bgr, read_image
+from ..utils.image import read_image_bgr
 
 import numpy as np
 from PIL import Image
@@ -41,13 +41,6 @@ def _parse(value, function, fmt):
     except ValueError as e:
         raise_from(ValueError(fmt.format(e)), None)
 
-
-def _read_mixup(csv_reader):
-    result = []
-    for row in csv_reader:
-        img_file = row[0]
-        result.append(img_file)
-    return result
 
 def _read_classes(csv_reader):
     """ Parse the classes file given by csv_reader.
@@ -118,17 +111,6 @@ def _open_for_csv(path):
         return open(path, 'r', newline='')
 
 
-def mixup_data(x, y, alpha=1.0):
-    '''Returns mixed inputs and lambda'''
-    if alpha > 0:
-        lam = np.random.beta(alpha, alpha)
-    else:
-        lam = 1
-
-    mixed_x = lam * x + (1 - lam) * y
-
-    return mixed_x, lam
-
 class CSVGenerator(Generator):
     """ Generate data for a custom CSV dataset.
 
@@ -140,7 +122,6 @@ class CSVGenerator(Generator):
         csv_data_file,
         csv_class_file,
         base_dir=None,
-        mixup_file=None,
         **kwargs
     ):
         """ Initialize a CSV data generator.
@@ -150,9 +131,9 @@ class CSVGenerator(Generator):
             csv_class_file: Path to the CSV classes file.
             base_dir: Directory w.r.t. where the files are to be searched (defaults to the directory containing the csv_data_file).
         """
-        self.image_names    = []
-        self.image_data     = {}
-        self.base_dir       = base_dir
+        self.image_names = []
+        self.image_data  = {}
+        self.base_dir    = base_dir
 
         # Take base_dir from annotations file if not explicitly specified.
         if self.base_dir is None:
@@ -176,14 +157,6 @@ class CSVGenerator(Generator):
         except ValueError as e:
             raise_from(ValueError('invalid CSV annotations file: {}: {}'.format(csv_data_file, e)), None)
         self.image_names = list(self.image_data.keys())
-
-        self.mixup_names = None
-        if mixup_file is not None:
-            try:
-                with _open_for_csv(mixup_file) as file:
-                    self.mixup_names = _read_mixup(csv.reader(file, delimiter=','))
-            except ValueError as e:
-                raise_from(ValueError('invalid CSV class file: {}: {}'.format(csv_class_file, e)), None)
 
         super(CSVGenerator, self).__init__(**kwargs)
 
@@ -232,15 +205,6 @@ class CSVGenerator(Generator):
     def load_image(self, image_index):
         """ Load an image at the image_index.
         """
-        image   = read_image(self.image_path(image_index))
-        lam     = 1.0
-        if self.mixup_names is not None:
-            mixup_image = read_image(os.path.join(self.base_dir, self.mixup_names[np.random.randint(len(self.mixup_names))]))
-            image, lam  = mixup_data(image, mixup_image)
-        
-        return image, lam
-
-    def load_rgb_image(self, image_index):
         return read_image_bgr(self.image_path(image_index))
 
     def load_annotations(self, image_index):

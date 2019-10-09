@@ -51,7 +51,6 @@ def default_classification_model(
         inputs  = keras.layers.Input(shape=(pyramid_feature_size, None, None))
     else:
         inputs  = keras.layers.Input(shape=(None, None, pyramid_feature_size))
-    
     outputs = inputs
     for i in range(4):
         outputs = keras.layers.Conv2D(
@@ -80,13 +79,7 @@ def default_classification_model(
     return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
 
-def default_regression_model(
-    num_values, 
-    num_anchors, 
-    pyramid_feature_size=256, 
-    regression_feature_size=256, 
-    name='regression_submodel'
-):
+def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, regression_feature_size=256, name='regression_submodel'):
     """ Creates the default regression submodel.
 
     Args
@@ -114,7 +107,6 @@ def default_regression_model(
         inputs  = keras.layers.Input(shape=(pyramid_feature_size, None, None))
     else:
         inputs  = keras.layers.Input(shape=(None, None, pyramid_feature_size))
-    
     outputs = inputs
     for i in range(4):
         outputs = keras.layers.Conv2D(
@@ -127,7 +119,6 @@ def default_regression_model(
     outputs = keras.layers.Conv2D(num_anchors * num_values, name='pyramid_regression', **options)(outputs)
     if keras.backend.image_data_format() == 'channels_first':
         outputs = keras.layers.Permute((2, 3, 1), name='pyramid_regression_permute')(outputs)
-    
     outputs = keras.layers.Reshape((-1, num_values), name='pyramid_regression_reshape')(outputs)
 
     return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
@@ -207,7 +198,7 @@ def __build_pyramid(models, features):
     """ Applies all submodels to each FPN level.
 
     Args
-        models   : List of sumodels to run on each pyramid level (by default only regression, classifcation).
+        models   : List of submodels to run on each pyramid level (by default only regression, classifcation).
         features : The FPN features.
 
     Returns
@@ -296,7 +287,6 @@ def retinanet(
 def retinanet_bbox(
     model                 = None,
     nms                   = True,
-    nms_threshold         = 0.5,
     class_specific_filter = True,
     name                  = 'retinanet-bbox',
     anchor_params         = None,
@@ -354,7 +344,6 @@ def retinanet_bbox(
     # filter detections (apply NMS / score threshold / select top-k)
     detections = layers.FilterDetections(
         nms                   = nms,
-        nms_threshold         = nms_threshold,
         class_specific_filter = class_specific_filter,
         name                  = 'filtered_detections'
     )([boxes, classification] + other)

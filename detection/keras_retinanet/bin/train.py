@@ -24,9 +24,6 @@ import warnings
 import keras
 import keras.preprocessing.image
 import tensorflow as tf
-from keras.callbacks import CSVLogger
-
-from functools import partial, update_wrapper
 
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
@@ -51,11 +48,8 @@ from ..utils.keras_version import check_keras_version
 from ..utils.model import freeze as freeze_model
 from ..utils.transform import random_transform_generator
 from ..utils.image import random_visual_effect_generator
+from ..utils.gpu import setup_gpu
 
-def wrapped_partial(func, *args, **kwargs):
-    partial_func = partial(func, *args, **kwargs)
-    update_wrapper(partial_func, func)
-    return partial_func
 
 def makedirs(path):
     # Intended behavior: try to create the directory,
@@ -66,14 +60,6 @@ def makedirs(path):
     except OSError:
         if not os.path.isdir(path):
             raise
-
-
-def get_session():
-    """ Construct a modified tf session.
-    """
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    return tf.Session(config=config)
 
 
 def model_with_weights(model, weights, skip_mismatch):
@@ -90,7 +76,7 @@ def model_with_weights(model, weights, skip_mismatch):
 
 
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
-                  freeze_backbone=False, lr=1e-5, config=None, mixup=False, nms_threshold=0.5):
+                  freeze_backbone=False, lr=1e-5, config=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -128,18 +114,13 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         training_model = model
 
     # make prediction model
-    prediction_model = retinanet_bbox(model=model, nms_threshold=nms_threshold, anchor_params=anchor_params)
-
-    if mixup:
-        cls_loss_fn = losses.mixup_focal
-    else:
-        cls_loss_fn = losses.focal
+    prediction_model = retinanet_bbox(model=model, anchor_params=anchor_params)
 
     # compile model
     training_model.compile(
         loss={
             'regression'    : losses.smooth_l1(),
-            'classification': cls_loss_fn()
+            'classification': losses.focal()
         },
         optimizer=keras.optimizers.adam(lr=lr, clipnorm=0.001)
     )
@@ -164,10 +145,19 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
 
     tensorboard_callback = None
 
-    if args.logger_dir:
-        makedirs(args.logger_dir)
-        csv_logger = CSVLogger(os.path.join(args.logger_dir, 'train.csv'), append=True, separator=',')
-        callbacks.append(csv_logger)
+    if args.tensorboard_dir:
+        tensorboard_callback = keras.callbacks.TensorBoard(
+            log_dir                = args.tensorboard_dir,
+            histogram_freq         = 0,
+            batch_size             = args.batch_size,
+            write_graph            = True,
+            write_grads            = False,
+            write_images           = False,
+            embeddings_freq        = 0,
+            embeddings_layer_names = None,
+            embeddings_metadata    = None
+        )
+        callbacks.append(tensorboard_callback)
 
     if args.evaluation and validation_generator:
         if args.dataset_type == 'coco':
@@ -176,7 +166,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
             # use prediction model for evaluation
             evaluation = CocoEval(validation_generator, tensorboard=tensorboard_callback)
         else:
-            evaluation = Evaluate(validation_generator, save_path=args.save_path, tensorboard=tensorboard_callback, csv_logger=os.path.join(args.logger_dir, 'eval.csv'), weighted_average=args.weighted_average)
+            evaluation = Evaluate(validation_generator, tensorboard=tensorboard_callback, weighted_average=args.weighted_average)
         evaluation = RedirectModel(evaluation, prediction_model)
         callbacks.append(evaluation)
 
@@ -190,9 +180,9 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
                 '{backbone}_{dataset_type}_{{epoch:02d}}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type)
             ),
             verbose=1,
-            save_best_only=True,
-            monitor="mAP",
-            mode='max'
+            # save_best_only=True,
+            # monitor="mAP",
+            # mode='max'
         )
         checkpoint = RedirectModel(checkpoint, model)
         callbacks.append(checkpoint)
@@ -287,7 +277,6 @@ def create_generators(args, preprocess_image):
         train_generator = CSVGenerator(
             args.annotations,
             args.classes,
-            mixup_file=args.mixup_path,
             transform_generator=transform_generator,
             visual_effect_generator=visual_effect_generator,
             **common_args
@@ -422,10 +411,8 @@ def parse_args(args):
     parser.add_argument('--epochs',           help='Number of epochs to train.', type=int, default=50)
     parser.add_argument('--steps',            help='Number of steps per epoch.', type=int, default=10000)
     parser.add_argument('--lr',               help='Learning rate.', type=float, default=1e-5)
-    parser.add_argument('--nms-threshold',    help='NMS threshold.', type=float, default=0.5)
-    parser.add_argument('--mixup-path',       help='Path to CSV file containing images used as mixup', default=None)
     parser.add_argument('--snapshot-path',    help='Path to store snapshots of models during training (defaults to \'./snapshots\')', default='./snapshots')
-    parser.add_argument('--logger-dir',       help='Log directory for Tensorboard output', default='./logs')
+    parser.add_argument('--tensorboard-dir',  help='Log directory for Tensorboard output', default='./logs')
     parser.add_argument('--no-snapshots',     help='Disable saving snapshots.', dest='snapshots', action='store_false')
     parser.add_argument('--no-evaluation',    help='Disable per epoch evaluation.', dest='evaluation', action='store_false')
     parser.add_argument('--freeze-backbone',  help='Freeze training of backbone layers.', action='store_true')
@@ -435,7 +422,6 @@ def parse_args(args):
     parser.add_argument('--config',           help='Path to a configuration parameters .ini file.')
     parser.add_argument('--weighted-average', help='Compute the mAP using the weighted average of precisions among classes.', action='store_true')
     parser.add_argument('--compute-val-loss', help='Compute validation loss during training', dest='compute_val_loss', action='store_true')
-    parser.add_argument('--save-path',        help='Path for saving images with detections (doesn\'t work for COCO).')
 
     # Fit generator arguments
     parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.', action='store_true')
@@ -451,10 +437,6 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-    # make save path if it doesn't exist
-    if args.save_path is not None and not os.path.exists(args.save_path):
-        os.makedirs(args.save_path)
-
     # create object that stores backbone information
     backbone = models.backbone(args.backbone)
 
@@ -463,8 +445,7 @@ def main(args=None):
 
     # optionally choose specific GPU
     if args.gpu:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    keras.backend.tensorflow_backend.set_session(get_session())
+        setup_gpu(args.gpu)
 
     # optionally load config parameters
     if args.config:
@@ -488,10 +469,6 @@ def main(args=None):
         if weights is None and args.imagenet_weights:
             weights = backbone.download_imagenet()
 
-        mixup = False
-        if args.mixup_path is not None:
-            mixup = True
-
         print('Creating model, this may take a second...')
         model, training_model, prediction_model = create_models(
             backbone_retinanet=backbone.retinanet,
@@ -500,13 +477,11 @@ def main(args=None):
             multi_gpu=args.multi_gpu,
             freeze_backbone=args.freeze_backbone,
             lr=args.lr,
-            config=args.config,
-            mixup=mixup,
-            nms_threshold=args.nms_threshold
+            config=args.config
         )
 
     # print model summary
-    # print(model.summary())
+    print(model.summary())
 
     # this lets the generator compute backbone layer shapes using the actual backbone model
     if 'vgg' in args.backbone or 'densenet' in args.backbone:
@@ -526,15 +501,10 @@ def main(args=None):
     if not args.compute_val_loss:
         validation_generator = None
 
-    initial_epoch = 0
-    if args.snapshot is not None:
-        initial_epoch = int(os.path.basename(args.snapshot).split(".")[0].split("_")[-1])
-
     # start training
     return training_model.fit_generator(
         generator=train_generator,
         steps_per_epoch=args.steps,
-        initial_epoch=initial_epoch,
         epochs=args.epochs,
         verbose=1,
         callbacks=callbacks,
