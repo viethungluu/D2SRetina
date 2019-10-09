@@ -65,6 +65,12 @@ class CocoGenerator(Generator):
         for key, value in self.classes.items():
             self.labels[value] = key
 
+
+        print(self.coco_labels)
+        print(self.coco_labels_inverse)
+        print(self.classes)
+        print(self.labels)
+
     def size(self):
         """ Size of the COCO dataset.
         """
