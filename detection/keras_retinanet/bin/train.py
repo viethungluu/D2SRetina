@@ -92,7 +92,6 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         training_model   : The training model. If multi_gpu=0, this is identical to model.
         prediction_model : The model wrapped with utility functions to perform object detection (applies regression values and performs NMS).
     """
-
     modifier = freeze_model if freeze_backbone else None
 
     # load anchor parameters, or pass None (so that defaults will be used)

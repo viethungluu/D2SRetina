@@ -38,7 +38,7 @@ class CocoGenerator(Generator):
         """
         self.data_dir  = data_dir
         self.set_name  = set_name
-        self.coco      = COCO(os.path.join(data_dir, 'annotations', 'instances_' + set_name + '.json'))
+        self.coco      = COCO(os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
         self.image_ids = self.coco.getImgIds()
 
         self.load_classes()
@@ -121,7 +121,7 @@ class CocoGenerator(Generator):
         """ Load an image at the image_index.
         """
         image_info = self.coco.loadImgs(self.image_ids[image_index])[0]
-        path       = os.path.join(self.data_dir, 'images', self.set_name, image_info['file_name'])
+        path       = os.path.join(self.data_dir, 'images', image_info['file_name'])
         return read_image_bgr(path)
 
     def load_annotations(self, image_index):
@@ -131,7 +131,7 @@ class CocoGenerator(Generator):
         annotations_ids = self.coco.getAnnIds(imgIds=self.image_ids[image_index], iscrowd=False)
         annotations     = {'labels': np.empty((0,)), 'bboxes': np.empty((0, 4))}
 
-        # some images appear to miss annotations (like image with id 257034)
+        # some images appear to miss annotations
         if len(annotations_ids) == 0:
             return annotations
 
