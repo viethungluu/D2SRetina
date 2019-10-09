@@ -52,19 +52,22 @@ class CocoGenerator(Generator):
         categories = self.coco.loadCats(self.coco.getCatIds())
         categories.sort(key=lambda x: x['id'])
 
-        self.classes             = {}
-        self.coco_labels         = {}
-        self.coco_labels_inverse = {}
-        for c in categories:
-            self.coco_labels[len(self.classes)] = c['id']
-            self.coco_labels_inverse[c['id']] = len(self.classes)
-            self.classes[c['name']] = len(self.classes)
+        # self.classes             = {}
+        # self.coco_labels         = {}
+        # self.coco_labels_inverse = {}
+        # for c in categories:
+        #     self.coco_labels[len(self.classes)] = c['id']
+        #     self.coco_labels_inverse[c['id']] = len(self.classes)
+        #     self.classes[c['name']] = len(self.classes)
+        # self.labels = {}
+        # for key, value in self.classes.items():
+        #     self.labels[value] = key
 
-        # also load the reverse (label -> name)
-        self.labels = {}
-        for key, value in self.classes.items():
-            self.labels[value] = key
-
+        # convert all classes to one class "object"
+        self.classes             = {'object': 0}
+        self.coco_labels         = {0: 0}
+        self.coco_labels_inverse = {0: 0}
+        self.labels = {0: 'object'}
 
         print(self.coco_labels)
         print(self.coco_labels_inverse)
@@ -148,7 +151,9 @@ class CocoGenerator(Generator):
             if a['bbox'][2] < 1 or a['bbox'][3] < 1:
                 continue
 
-            annotations['labels'] = np.concatenate([annotations['labels'], [self.coco_label_to_label(a['category_id'])]], axis=0)
+            # annotations['labels'] = np.concatenate([annotations['labels'], [self.coco_label_to_label(a['category_id'])]], axis=0)
+            # convert all classes to one class "object"
+            annotations['labels'] = np.concatenate([annotations['labels'], [self.coco_label_to_label(0)]], axis=0)
             annotations['bboxes'] = np.concatenate([annotations['bboxes'], [[
                 a['bbox'][0],
                 a['bbox'][1],
