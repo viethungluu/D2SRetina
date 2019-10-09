@@ -251,7 +251,7 @@ def create_generators(args, preprocess_image):
 
         train_generator = CocoGenerator(
             args.coco_path,
-            'train',
+            'training',
             transform_generator=transform_generator,
             visual_effect_generator=visual_effect_generator,
             **common_args
