@@ -169,7 +169,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
             from ..callbacks.coco import CocoEval
 
             # use prediction model for evaluation
-            evaluation = CocoEval(validation_generator, tensorboard=tensorboard_callback)
+            evaluation = CocoEval(validation_generator, tensorboard=tensorboard_callback, freq=args.eval_freq)
         else:
             evaluation = Evaluate(validation_generator, save_path=args.save_path, tensorboard=tensorboard_callback, csv_logger=os.path.join(args.logger_dir, 'eval.csv'), weighted_average=args.weighted_average)
         evaluation = RedirectModel(evaluation, prediction_model)
@@ -428,6 +428,7 @@ def parse_args(args):
     parser.add_argument('--weighted-average', help='Compute the mAP using the weighted average of precisions among classes.', action='store_true')
     parser.add_argument('--compute-val-loss', help='Compute validation loss during training', dest='compute_val_loss', action='store_true')
     parser.add_argument('--save-path',        help='Path for saving images with detections (doesn\'t work for COCO).')
+    parser.add_argument('--eval-freq',        help='Size of the batches.', default=5, type=int)
 
     # Fit generator arguments
     parser.add_argument('--multiprocessing',  help='Use multiprocessing in fit_generator.', action='store_true')
@@ -528,7 +529,7 @@ def main(args=None):
         use_multiprocessing=args.multiprocessing,
         max_queue_size=args.max_queue_size,
         validation_data=validation_generator,
-        validation_freq=2
+        validation_freq=args.eval_freq
     )
 
 

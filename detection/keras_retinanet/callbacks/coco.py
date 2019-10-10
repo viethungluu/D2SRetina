@@ -21,7 +21,7 @@ from ..utils.coco_eval import evaluate_coco
 class CocoEval(keras.callbacks.Callback):
     """ Performs COCO evaluation on each epoch.
     """
-    def __init__(self, generator, tensorboard=None, threshold=0.05):
+    def __init__(self, generator, tensorboard=None, threshold=0.05, freq=5):
         """ CocoEval callback intializer.
 
         Args
@@ -29,14 +29,15 @@ class CocoEval(keras.callbacks.Callback):
             tensorboard : If given, the results will be written to tensorboard.
             threshold   : The score threshold to use.
         """
-        self.generator = generator
-        self.threshold = threshold
-        self.tensorboard = tensorboard
+        self.generator      = generator
+        self.threshold      = threshold
+        self.tensorboard    = tensorboard
+        self.freq           = freq
 
         super(CocoEval, self).__init__()
 
     def on_epoch_end(self, epoch, logs=None):
-        if epoch % 5 == 0:
+        if epoch % self.freq == 0:
             logs = logs or {}
 
             coco_tag = ['AP @[ IoU=0.50:0.95 | area=   all | maxDets=100 ]',
