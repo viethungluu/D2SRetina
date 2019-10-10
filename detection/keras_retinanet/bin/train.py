@@ -251,7 +251,7 @@ def create_generators(args, preprocess_image):
 
         train_generator = CocoGenerator(
             args.coco_path,
-            'training',
+            'training_object',
             transform_generator=transform_generator,
             visual_effect_generator=visual_effect_generator,
             **common_args
@@ -259,7 +259,7 @@ def create_generators(args, preprocess_image):
 
         validation_generator = CocoGenerator(
             args.coco_path,
-            'validation_wo_occlusion',
+            'validation_wo_occlusion_object',
             shuffle_groups=False,
             **common_args
         )
