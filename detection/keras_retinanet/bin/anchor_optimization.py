@@ -135,7 +135,7 @@ def average_overlap(values, entries, state, image_shape, mode='focal', ratio_cou
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optimize RetinaNet anchor configuration')
-    parser.add_argument('data-dir', help='Path to Coco folder.')
+    parser.add_argument('--data-dir', help='Path to Coco folder.')
     parser.add_argument('--set-name', type=str, default='train', help='Name of annotations file')
     parser.add_argument('--scales', type=int, help='Number of scales.', default=3)
     parser.add_argument('--ratios', type=int, help='Number of ratios, has to be an odd number.', default=3)
