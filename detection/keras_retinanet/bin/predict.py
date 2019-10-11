@@ -1,3 +1,8 @@
+from IPython import get_ipython
+ipy = get_ipython()
+if ipy is not None:
+    ipy.run_line_magic('matplotlib', 'inline')
+
 import sys
 import os
 
@@ -11,7 +16,6 @@ import cv2
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-exec(%matplotlib inline)
 
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
