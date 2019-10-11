@@ -7,6 +7,7 @@ import argparse
 import keras
 import tensorflow as tf
 
+import cv2
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
