@@ -9,9 +9,9 @@ import tensorflow as tf
 
 import cv2
 
-%matplotlib inline
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+exec(%matplotlib inline)
 
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
