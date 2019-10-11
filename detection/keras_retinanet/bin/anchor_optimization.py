@@ -18,7 +18,6 @@ if __name__ == "__main__" and __package__ is None:
 from ..utils.compute_overlap import compute_overlap
 from ..utils.anchors import generate_anchors, AnchorParameters, anchors_for_shape
 from ..utils.image import compute_resize_scale
-from ..utils.paint_text import paint_text
 
 from pycocotools.coco import COCO
 
