@@ -122,9 +122,7 @@ class RetinaNetWrapper(object):
 
         if plot_detection:
             draw_detections(raw_image, image_boxes, image_scores, image_labels, score_threshold=self.score_threshold)
-            # plt.imshow(raw_image)
             plt.imsave("detection.png", raw_image)
-            # plt.show()
         
         # copy detections to all_detections
         all_detections = image_detections[image_detections[:, -1] == self.num_classes - 1, :-1]
