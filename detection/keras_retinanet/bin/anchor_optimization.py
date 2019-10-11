@@ -136,7 +136,8 @@ def average_overlap(values, entries, state, image_shape, mode='focal', ratio_cou
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optimize RetinaNet anchor configuration')
-    parser.add_argument('annotations', help='Path to Coco annotations file (i.e. path/to/dir/trainning.json).')
+    parser.add_argument('data-dir', help='Path to Coco folder.')
+    parser.add_argument('--set-name', type=str, default='train', help='Name of annotations file')
     parser.add_argument('--scales', type=int, help='Number of scales.', default=3)
     parser.add_argument('--ratios', type=int, help='Number of ratios, has to be an odd number.', default=3)
     parser.add_argument('--include-stride', action='store_true',
@@ -169,8 +170,7 @@ if __name__ == "__main__":
 
     print('Loading object dimensions.')
     
-    coco             = COCO(args.annotations)
-    coco_dir         = os.path.dirname(args.annotations)
+    coco             = COCO(os.path.join(args.data_dir, 'annotations', 'D2S_' + args.set_name + '.json'))
 
     for imgIds in coco.getImgIds():
         annotations_ids     = coco.getAnnIds(imgIds=imgIds, iscrowd=False)
@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
             if args.resize:
                 image_info  = coco.loadImgs(imgIds)[0]
-                image_path  = os.path.join(coco_dir, 'images', image_info['file_name'])
+                image_path  = os.path.join(args.data_dir, 'images', image_info['file_name'])
                 img         = tiff.imread(image_path)
                 if len(img.shape) == 2:
                     img = np.expand_dims(img, 2)
