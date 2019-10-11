@@ -17,7 +17,7 @@ if __name__ == "__main__" and __package__ is None:
 
 from ..utils.compute_overlap import compute_overlap
 from ..utils.anchors import generate_anchors, AnchorParameters, anchors_for_shape
-from ..utils.image import compute_resize_scale
+from ..utils.image import compute_resize_scale, read_image_bgr
 
 from pycocotools.coco import COCO
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
             if args.resize:
                 image_info  = coco.loadImgs(imgIds)[0]
                 image_path  = os.path.join(args.data_dir, 'images', image_info['file_name'])
-                img         = tiff.imread(image_path)
+                img         = read_image_bgr(image_path)
                 if len(img.shape) == 2:
                     img = np.expand_dims(img, 2)
                 
