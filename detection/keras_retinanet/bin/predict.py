@@ -8,6 +8,8 @@ import keras
 import tensorflow as tf
 
 import cv2
+
+%matplotlib inline
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
