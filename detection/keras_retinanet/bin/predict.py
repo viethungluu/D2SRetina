@@ -66,7 +66,7 @@ class RetinaNetWrapper(object):
                 convert_model, 
                 backbone,
                 anchor_params  = None, 
-                score_threshold=0.05,
+                score_threshold=0.5,
                 max_detections =100,
                 image_min_side =800,
                 image_max_side =1333,
@@ -172,7 +172,7 @@ def main(args=None):
                                 image_max_side  = args.image_max_side)
 
     image = read_image_bgr(args.image_path)
-    all_detections = model.predict(image)
+    all_detections = model.predict(image, plot_detection=True)
 
     # import csv
     # with open(os.path.join(args.save_path, 'detections.csv'), mode='w') as csv_file:
