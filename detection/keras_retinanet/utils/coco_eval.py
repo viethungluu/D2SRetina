@@ -20,6 +20,7 @@ import keras
 import numpy as np
 import json
 import cv2
+import os
 
 import progressbar
 assert(callable(progressbar.progressbar)), "Using wrong progressbar module, install 'progressbar2' instead."
