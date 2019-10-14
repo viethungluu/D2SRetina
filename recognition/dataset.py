@@ -149,7 +149,6 @@ if __name__ == '__main__':
 	parser.add_argument('--num-images', help='Number of images to be shown.', type=int, default=12)
 	args 	= parser.parse_args(sys.argv[1:])
 
-
 	ds = CoCoDataset(args.coco_path, set_name="validation_wo_occlusion_object")
 	
 	plt.figure(figsize=(20, 10))

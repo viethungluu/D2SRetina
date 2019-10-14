@@ -19,12 +19,13 @@ from pycocotools.cocoeval import COCOeval
 import keras
 import numpy as np
 import json
+import cv2
 
 import progressbar
 assert(callable(progressbar.progressbar)), "Using wrong progressbar module, install 'progressbar2' instead."
 
 
-def evaluate_coco(generator, model, threshold=0.05):
+def evaluate_coco(generator, model, save_path=None, threshold=0.05):
     """ Use the pycocotools to evaluate a COCO model on a dataset.
 
     Args
@@ -36,8 +37,9 @@ def evaluate_coco(generator, model, threshold=0.05):
     results = []
     image_ids = []
     for index in progressbar.progressbar(range(generator.size()), prefix='COCO evaluation: '):
-        image = generator.load_image(index)
-        image = generator.preprocess_image(image)
+        raw_image = generator.load_image(index)
+
+        image = generator.preprocess_image(raw_image.copy())
         image, scale = generator.resize_image(image)
 
         if keras.backend.image_data_format() == 'channels_first':
@@ -69,6 +71,15 @@ def evaluate_coco(generator, model, threshold=0.05):
 
             # append detection to results
             results.append(image_result)
+
+            # draw detection
+            if save_path is not None:
+                b = np.array(box).astype(int)
+                cv2.rectangle(raw_image, (b[0], b[1]), (b[2], b[3]), color=(0, 255, 0), thickness=1, cv2.LINE_AA)
+
+        # save draw image
+        if save_path is not None:
+            cv2.imwrite(os.path.join(save_path, '{}.png'.format(index)), raw_image)
 
         # append image to list of processed images
         image_ids.append(generator.image_ids[index])
