@@ -1,6 +1,6 @@
 import os
-import glob
-import argparse, sys
+import sys
+import argparse
 
 import numpy as np
 from PIL import Image

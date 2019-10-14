@@ -123,8 +123,8 @@ def main():
 	test_dataset 	= ImageFolder(os.path.join(DATA_DIR, args.dataset, "val"),
 							transform=transforms.Compose(transforms_args))
 			
-	train_loader 	= DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, 	**kwargs)
-	test_loader 	= DataLoader(test_dataset, 	batch_size=args.batch_size, shuffle=False, 	**kwargs)
+	train_loader 	= DataLoader(train_dataset, batch_size=1, shuffle=True, **kwargs)
+	test_loader 	= DataLoader(test_dataset, 	batch_size=1, shuffle=False, **kwargs)
 
 	# init model
 	model, optim_state_dict = load_model(args.backbone, args.snapshot)
