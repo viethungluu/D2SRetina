@@ -1,5 +1,6 @@
 import os
 import glob
+import argparse, sys
 
 import numpy as np
 from PIL import Image
@@ -48,10 +49,10 @@ class CoCoDataset(Dataset):
 		# print(self.labels)
 
 	def _load_annotations(self):
-		self.annotations     = {'labels': np.empty((0,)), 'bboxes': np.empty((0, 4))}
+		self.annotations     = {'labels': np.empty((0,)), 'bboxes': np.empty((0, 4)), 'imgIds': np.empty((0,))}
+
 		for image_id in self.image_ids:
-			annotations_ids = self.coco.getAnnIds(imgIds=image_id, iscrowd=False)
-			
+			annotations_ids = self.coco.getAnnIds(imgIds=image_id, iscrowd=False)	
 			if len(annotations_ids) == 0:
 				continue
 			
@@ -64,21 +65,32 @@ class CoCoDataset(Dataset):
 
 				self.annotations['labels'] = np.concatenate([annotations['labels'], [self.coco_label_to_label(a['category_id'])]], axis=0)
 				self.annotations['bboxes'] = np.concatenate([annotations['bboxes'], [[
-					a['bbox'][0],
-					a['bbox'][1],
-					a['bbox'][0] + a['bbox'][2],
-					a['bbox'][1] + a['bbox'][3],
-				]]], axis=0)
+						a['bbox'][0],
+						a['bbox'][1],
+						a['bbox'][0] + a['bbox'][2],
+						a['bbox'][1] + a['bbox'][3],
+					]]], axis=0)
+				self.annotations['imgIds'] = np.concatenate([annotations['imgIds'], [image_id]], axis=0)
 
-	def _load_image(self, index):
-		image_info 	= self.coco.loadImgs(self.image_ids[index])[0]
+	def load_image(self, index):
+		imgId 	= self.annotations['imgIds'][index]
+		bbox 	= self.annotations['bboxes'][index]
+		label 	= self.annotations['labels'][index]
+
+
+		image_info 	= self.coco.loadImgs(imgId)[0]
 		path 		= os.path.join(self.data_dir, 'images', image_info['file_name'])
-		image 		= Image.open(path).convert('RGB')
+		image 		= np.asarray(Image.open(path).convert('RGB'))
+
+		return image[bbox[0]: bbox[2], bbox[1]: bbox[3], ...], label
 
 	def __getitem__(self, index):
+		image, label = self._load_image(index)
+		
 		if self.transform:
 			image = self.transform(image)
-		return image
+		
+		return image, self.coco_label_to_label(label)
 
 	def __len__(self):
 		return len(self.annotations)
@@ -124,9 +136,30 @@ class CoCoDataset(Dataset):
 		"""
 		return self.coco_labels[label]
 
-	def image_aspect_ratio(self, image_index):
+	def image_aspect_ratio(self, index):
 		""" Compute the aspect ratio for an image with image_index.
 		"""
-		image = self.coco.loadImgs(self.image_ids[image_index])[0]
-		return float(image['width']) / float(image['height'])
+		bbox 	= self.annotations['bboxes'][index]
+		return float(bbox[2] - bbox[0]) / float(bbox[3] - bbox[1])
 
+
+if __name__ == '__main__':
+	parser 	= argparse.ArgumentParser()
+	parser.add_argument('--coco-path', type=str, help='', default='')
+	parser.add_argument('--num-images', help='Number of images to be shown.', type=int, default=12)
+	args 	= parser.parse_args(sys.argv[1:])
+
+
+	ds = CoCoDataset(args.coco_path, set_name="validation_wo_occlusion_object")
+	
+	plt.figure(figsize=(20, 10))
+	columns = 2
+	num_images = args.num_images if args.num_images < len(ds) else len(ds)
+	for i in range(num_images):
+		image, label   = ds.load_image(i)
+		ax = plt.subplot(num_images // columns + 1, columns, i + 1)
+		ax.imshow(image)
+		ax.title.set_text(label)
+	
+	plt.tight_layout()
+	plt.savefig("debug.png")
