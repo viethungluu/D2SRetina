@@ -162,4 +162,4 @@ if __name__ == '__main__':
 		ax.title.set_text(label)
 	
 	plt.tight_layout()
-	plt.savefig("debug.png")
+	plt.savefig("debug_regcognition.png")
