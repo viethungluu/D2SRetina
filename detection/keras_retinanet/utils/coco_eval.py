@@ -75,7 +75,7 @@ def evaluate_coco(generator, model, save_path=None, threshold=0.05):
             # draw detection
             if save_path is not None:
                 b = np.array(box).astype(int)
-                cv2.rectangle(raw_image, (b[0], b[1]), (b[2], b[3]), color=(0, 255, 0), thickness=1, cv2.LINE_AA)
+                cv2.rectangle(raw_image, (b[0], b[1]), (b[2], b[3]), (0, 255, 0), 1, cv2.LINE_AA)
 
         # save draw image
         if save_path is not None:
