@@ -88,7 +88,7 @@ class CoCoDataset(Dataset):
 
 		print(imgId, bbox, self.coco_label_to_name(self.label_to_coco_label(label)))
 
-		image_info 	= self.coco.loadImgs(imgId)[0]
+		image_info 	= self.coco.loadImgs(self.image_ids[0])[0]
 		path 		= os.path.join(self.data_dir, 'images', image_info['file_name'])
 		image 		= np.asarray(Image.open(path).convert('RGB'))
 
