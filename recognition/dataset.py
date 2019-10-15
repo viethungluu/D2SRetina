@@ -101,6 +101,7 @@ class CoCoDataset(Dataset):
 		return image, self.coco_label_to_label(label)
 
 	def __len__(self):
+		# 
 		return len(self.annotations)
 
 	def num_classes(self):
@@ -154,10 +155,11 @@ class CoCoDataset(Dataset):
 if __name__ == '__main__':
 	parser 	= argparse.ArgumentParser()
 	parser.add_argument('--coco-path', type=str, help='', default='')
+	parser.add_argument('--set-name', type=str, help='', default='validation_wo_occlusion_object')
 	parser.add_argument('--num-images', help='Number of images to be shown.', type=int, default=12)
-	args 	= parser.parse_args(sys.argv[1:])
+	args 	= parser.parse_args()
 
-	ds = CoCoDataset(args.coco_path, set_name="validation_wo_occlusion_object")
+	ds = CoCoDataset(args.coco_path, set_name=args.set_name)
 	
 	plt.figure(figsize=(20, 10))
 	columns = 2
