@@ -123,7 +123,7 @@ def main():
 	# define learning rate scheduler
 	lr_scheduler = LrScheduler(args.epoch_decay_start, args.n_epoch, args.lr)
 
-	log = []
+	log_file = os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.triplet_selector)) 
 	for epoch in range(init_epoch, init_epoch + args.n_epoch):
 		lr_scheduler.adjust_learning_rate(optimizer, epoch - 1, args.optim)
 
@@ -132,9 +132,18 @@ def main():
 		if epoch % args.eval_freq == 0:
 			test_loss = test_epoch(model, test_loader, test_loss_fn, cuda)
 			
-			log.append([epoch, train_loss, test_loss])
-			print('Epoch [%d/%d], Train loss: %.4f, Test loss: %.4f' 
-				% (epoch, init_epoch + args.n_epoch, train_loss, test_loss))
+			print('Epoch [%d/%d], Train loss: %.4f, Test loss: %.4f' % (epoch, init_epoch + args.n_epoch, train_loss, test_loss))
+			log = [epoch, train_loss, test_loss]
+			if os.path.isfile(log_file):
+				with open(log_file, mode='a', newline='') as csv_f:
+					writer = csv.writer(csv_f)
+					writer.writerow(log)
+			else:
+				with open(log_file, mode='w', newline='') as csv_f:
+					writer = csv.writer(csv_f)
+					# write header
+					writer.writerow(["epoch", "train_loss", "test_loss"])
+					writer.writerow(log)
 
 		if epoch % args.save_freq == 0:
 			torch.save({
@@ -142,12 +151,6 @@ def main():
 						'optimizer_state_dict': optimizer.state_dict(),
 						'epoch': epoch
 						}, os.path.join(args.snapshot_path, '%s_%s_%d.pth' % (args.backbone, args.triplet_selector, epoch)))
-
-	with open(os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.triplet_selector)), mode='w', newline='') as csv_f:
-		writer = csv.writer(csv_f)
-		# write header
-		writer.writerow(["epoch", "train_loss", "test_loss"])
-		writer.writerows(log)
 
 if __name__ == '__main__':
 	main()
