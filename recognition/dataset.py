@@ -19,14 +19,18 @@ class CoCoDataset(Dataset):
 	def __init__(self, data_dir, set_name, transform=None):		
 		self.data_dir 	= data_dir
 		self.set_name 	= set_name
+
+		print("Reading dataset from", os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
 		self.coco 		= COCO(os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
+		
 		self.image_ids 	= self.coco.getImgIds()
 		self._load_classes()
 		self._load_annotations()
 
-		print("Number of image:", len(self.annotations))
 		print("Number of classes:", self.num_classes())
-
+		print("Number of images:", len(self.image_ids))
+		print("Number of image patches:", self.annotations['imgIds'].shape)
+		
 		self.transform 	= transform
 
 		super(CoCoDataset, self).__init__()
@@ -159,7 +163,7 @@ if __name__ == '__main__':
 	parser.add_argument('--num-images', help='Number of images to be shown.', type=int, default=12)
 	args 	= parser.parse_args()
 
-	ds = CoCoDataset(args.coco_path, set_name=args.set_name)
+	ds = CoCoDataset(args.coco_path, args.set_name)
 	
 	plt.figure(figsize=(20, 10))
 	columns = 2
