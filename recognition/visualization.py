@@ -22,12 +22,30 @@ warnings.filterwarnings("ignore")
 
 cuda = torch.cuda.is_available()
 
+def random_colors(n):
+	ret = []
+	r = int(np.random.rand() * 256)
+	g = int(np.random.rand() * 256)
+	b = int(np.random.rand() * 256)
+	step = 256 / n
+	for i in range(n):
+		r += step
+		g += step
+		b += step
+		r = int(r) % 256
+		g = int(g) % 256
+		b = int(b) % 256
+		ret.append((r, g, b)) 
+	return ret
+
 def plot_embeddings(embeddings, targets, n_classes, xlim=None, ylim=None):
+	colors = random_colors(n_classes)
+
 	import matplotlib.pyplot as plt
 	plt.figure(figsize=(10, 10))
 	for i in range(n_classes):
 		inds = np.where(targets==i)[0]
-		plt.scatter(embeddings[inds, 0], embeddings[inds, 1], alpha=0.5)
+		plt.scatter(embeddings[inds, 0], embeddings[inds, 1], alpha=0.5, color=colors[i])
 	if xlim:
 		plt.xlim(xlim[0], xlim[1])
 	if ylim:
