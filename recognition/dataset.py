@@ -90,7 +90,7 @@ class CoCoDataset(Dataset):
 		path 		= os.path.join(self.data_dir, 'images', image_info['file_name'])
 		image 		= np.asarray(Image.open(path).convert('RGB'))
 
-		return image[int(bbox[0]): int(bbox[2]), int(bbox[1]): int(bbox[3]), ...], label
+		return image[int(bbox[1]): int(bbox[3]), int(bbox[0]): int(bbox[2]), ...], label
 
 	def __getitem__(self, index):
 		image, label = self._load_image(index)
@@ -163,7 +163,6 @@ if __name__ == '__main__':
 	
 	plt.figure(figsize=(20, 10))
 	columns = 2
-	num_images = args.num_images if args.num_images < len(ds) else len(ds)
 	for i in range(num_images):
 		image, label   = ds.load_image(i)
 		ax = plt.subplot(num_images // columns + 1, columns, i + 1)
