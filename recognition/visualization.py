@@ -6,6 +6,7 @@ import argparse, sys
 import torch
 import torch.nn.functional as F
 from torchvision import transforms
+from torch.utils.data import DataLoader
 
 import matplotlib
 import matplotlib.pyplot as plt
