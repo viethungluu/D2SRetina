@@ -27,8 +27,6 @@ from triplet_selectors import HardestNegativeTripletSelector, RandomNegativeTrip
 from scheduler import LrScheduler
 from utils import train_epoch, test_epoch
 
-from contanst import *
-
 # Ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -49,7 +47,7 @@ parser.add_argument('--P', 					type=int, 	default=8, help="Number of classes fo
 parser.add_argument('--triplet-selector',	type=str, 	default='all', help='Triplet sampling strategy: "all", "hard", "semi", "random". Default: "all"')
 
 # training params
-parser.add_argument('--lr', 				type=float, default=3.0)
+parser.add_argument('--lr', 				type=float, default=1e-3)
 parser.add_argument('--n-epoch', 			type=int, 	default=100)
 parser.add_argument('--n-batches', 			type=int, 	default=500, help="Number of mini batches for each training epoch. n_batches for testing epoch is fixed to 100")
 parser.add_argument('--epoch-decay-start', 	type=int, 	default=30)
