@@ -16,7 +16,7 @@ class CoCoDataset(Dataset):
 	def __init__(self, data_dir, set_name, transform=None):		
 		self.data_dir 	= data_dir
 		self.set_name 	= set_name
-		self.coco 		= OCO(os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
+		self.coco 		= COCO(os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
 		self.image_ids 	= self.coco.getImgIds()
 		self._load_classes()
 		self._load_annotations()
