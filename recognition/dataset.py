@@ -98,7 +98,7 @@ class CoCoDataset(Dataset):
 		if self.transform:
 			image = self.transform(image)
 		
-		return image, self.coco_label_to_label(label)
+		return image, label
 
 	def __len__(self):
 		# 
@@ -156,19 +156,19 @@ if __name__ == '__main__':
 	parser 	= argparse.ArgumentParser()
 	parser.add_argument('--coco-path', type=str, help='', default='')
 	parser.add_argument('--set-name', type=str, help='', default='validation_wo_occlusion')
-	parser.add_argument('--num-images', help='Number of images to be shown.', type=int, default=12)
+	parser.add_argument('--num-images', help='Number of images to be shown.', type=int, default=9)
 	args 	= parser.parse_args()
 
 	ds = CoCoDataset(args.coco_path, args.set_name)
 	
-	plt.figure()
-	columns = 2
+	plt.figure((20, 20))
+	columns = 3
 	num_images = args.num_images if args.num_images < len(ds) else len(ds)
 	for i in range(num_images):
 		image, label   = ds.load_image(i)
 		ax = plt.subplot(num_images // columns + 1, columns, i + 1)
 		ax.imshow(image)
-		ax.title.set_text(label)
+		ax.title.set_text(ds.coco_label_to_name(ds.label_to_coco_label(label)))
 	
 	plt.tight_layout()
 	plt.savefig("debug_regcognition.png")
