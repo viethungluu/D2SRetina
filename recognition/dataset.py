@@ -90,12 +90,14 @@ class CoCoDataset(Dataset):
 		path 		= os.path.join(self.data_dir, 'images', image_info['file_name'])
 		image 		= np.asarray(Image.open(path).convert('RGB'))
 
-		return image[int(bbox[1]): int(bbox[3]), int(bbox[0]): int(bbox[2]), ...], label
+		image 		= image[int(bbox[1]): int(bbox[3]), int(bbox[0]): int(bbox[2]), ...]
+		# resize image to target_size
+		image, _ 	 = resize_image(image, self.target_size)
+
+		return image, label
 
 	def __getitem__(self, index):
 		image, label = self._load_image(index)
-		# resize image to target_size
-		image, _ 	 = resize_image(image, self.target_size)
 		
 		if self.transform:
 			image = self.transform(image)

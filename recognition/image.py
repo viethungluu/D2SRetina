@@ -13,9 +13,7 @@ def compute_resize_scale(image_shape, target_size=224):
     """
 
     (rows, cols, _) = image_shape
-
     largest_side = max(rows, cols)
-
     # rescale the image so the largest side is target_size
     scale = target_size / largest_side
 
