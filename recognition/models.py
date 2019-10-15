@@ -107,7 +107,7 @@ def load_model(backbone, snapshot=None, imagenet_weights=True):
 	else:
 		if imagenet_weights:
 			# init a new model with ImageNet weights
-			model.load_state_dict(model_zoo.load_url(model_urls[backbone]))
+			model.load_state_dict(model_zoo.load_url(model_urls[backbone]), strict=False)
 	
 	return model, optim_state_dict, init_epoch
 
