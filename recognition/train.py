@@ -38,7 +38,6 @@ parser.add_argument('--seed', type=int, default=1)
 # dataset params
 parser.add_argument('--coco-path', type=str, help='', default='')
 parser.add_argument('--target-size', type=int, help='Resize/padding input image to target-size.', default=224)
-parser.add_argument('--augment', help='Add data augmentation to training', action='store_true')
 parser.add_argument('--num-workers', type=int, help='Number of workers for data loader', default=1)
 # model params
 parser.add_argument('--backbone', type=str, help='ResNet18/34/50/101/152', default='ResNet50')
@@ -60,6 +59,7 @@ parser.add_argument('--save-freq', type=int, default=5)
 # test/finetuning params
 parser.add_argument('--snapshot', 		type=str, help='Resume training from snapshot', default=None)
 parser.add_argument('--snapshot-path', 	type=str, help='Path to save snapshot', default='.')
+parser.add_argument('--logger-dir', 	type=str, help='Path to save log', default='.')
 
 args = parser.parse_args()
 
@@ -178,7 +178,7 @@ def main():
 		if epoch % args.eval_freq == 0:
 			test_loss, test_acc = test_epoch(model, test_loader, loss_fn, cuda)
 			
-			log.append([epoch, train_loss, train_acc, test_loss, test_loss])
+			log.append([epoch, train_loss, train_acc, test_loss, test_acc])
 			print('Epoch [%d/%d], Train loss: %.4f, Train acc: %.4f, Test acc: %.4f, Test loss: %.4f' 
 				% (epoch, init_epoch + args.n_epoch, train_loss, train_acc, test_loss, test_acc))
 
@@ -188,6 +188,12 @@ def main():
 						'optimizer_state_dict': optimizer.state_dict(),
 						'epoch': epoch
 						}, os.path.join(args.snapshot_path, '%s_%s_%d.pth' % (args.backbone, args.tripletselector, epoch)))
+
+	with open(os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.tripletselector)), mode='w', newline='') as csv_f:
+		writer = csv.writer(csv_f)
+		# write header
+		writer.writerow(["epoch", "train_loss", "train_acc", "test_loss", "test_acc"])
+		writer.writerows(log)
 
 if __name__ == '__main__':
 	main()
