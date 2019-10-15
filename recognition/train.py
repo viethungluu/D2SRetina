@@ -133,7 +133,7 @@ def main():
 	test_batch_sampler = TestBalancedBatchSampler(torch.from_numpy(np.array(test_dataset.all_targets())), 
 													K=args.K,
 													P=args.P,
-													n_batches=100)
+													n_batches=args.n_batches)
 		
 			
 	train_loader 	= DataLoader(train_dataset, batch_sampler=train_batch_sampler, **kwargs)
