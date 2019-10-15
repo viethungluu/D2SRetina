@@ -1,7 +1,8 @@
+import numpy as np
 import argparse
-import os
-import sys
 import warnings
 
-import numpy as np
+import os
+import sys
+
 from PIL import Image
