@@ -74,7 +74,7 @@ def main():
 
 	embeddings, labels 	= extract_embeddings(data_loader, model)
 	embeddings_tsne 	= TSNE(n_components=2).fit_transform(embeddings)
-	plot_embeddings(embeddings_tsne, dataset.num_classes(), labels)
+	plot_embeddings(embeddings_tsne, labels, dataset.num_classes())
 
 if __name__ == '__main__':
 	main()
