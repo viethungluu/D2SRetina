@@ -155,13 +155,13 @@ class CoCoDataset(Dataset):
 if __name__ == '__main__':
 	parser 	= argparse.ArgumentParser()
 	parser.add_argument('--coco-path', type=str, help='', default='')
-	parser.add_argument('--set-name', type=str, help='', default='validation_wo_occlusion_object')
+	parser.add_argument('--set-name', type=str, help='', default='validation_wo_occlusion')
 	parser.add_argument('--num-images', help='Number of images to be shown.', type=int, default=12)
 	args 	= parser.parse_args()
 
 	ds = CoCoDataset(args.coco_path, args.set_name)
 	
-	plt.figure(figsize=(20, 10))
+	plt.figure()
 	columns = 2
 	num_images = args.num_images if args.num_images < len(ds) else len(ds)
 	for i in range(num_images):
