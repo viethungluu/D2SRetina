@@ -60,7 +60,7 @@ def main():
 		model.cuda()
 
 	embeddings, labels 	= extract_embeddings(data_loader, model, cuda=cuda)
-	embeddings_tsne 	= TSNE(n_components=2).fit_transform(embeddings)
+	embeddings_tsne 	= TSNE(n_components=2, metric="euclidean").fit_transform(embeddings)
 	plot_embeddings(embeddings_tsne, labels, dataset.num_classes())
 
 if __name__ == '__main__':
