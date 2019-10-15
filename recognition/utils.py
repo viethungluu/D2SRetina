@@ -30,11 +30,12 @@ def train_epoch(model, data_loader, loss_fn, optimizer, cuda):
             loss_inputs += target
 
         loss_outputs = loss_fn(*loss_inputs)
-        loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
-        losses += loss.item()
+        loss         = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
+        losses      += loss.item()
 
         top_p, top_class    = outputs[0].topk(1, dim=1)
-        equals              = top_class == target[0].view(*top_class.shape)
+        target              = target[0].view(*top_class.shape).long()
+        equals              = top_class == target
         correct             += torch.mean(equals.type(torch.FloatTensor)).item()
 
         pbar.set_description("[%d/%d] %.5f" % (batch_idx, len(data_loader), loss.item()))
@@ -79,7 +80,8 @@ def test_epoch(model, data_loader, loss_fn, cuda):
             losses += loss.item()
             
             top_p, top_class    = outputs[0].topk(1, dim=1)
-            equals              = top_class == target[0].view(*top_class.shape)
+            target              = target[0].view(*top_class.shape).long()
+            equals              = top_class == target
             correct             += torch.mean(equals.type(torch.FloatTensor)).item()
         
         losses /= len(test_loader)
