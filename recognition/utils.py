@@ -7,7 +7,6 @@ def train_epoch(model, data_loader, loss_fn, optimizer, cuda):
     model.train()
     
     losses  = 0.0
-    correct = 0.0
 
     pbar = tqdm(data_loader)
     for batch_idx, (data, target) in enumerate(pbar):
@@ -33,11 +32,6 @@ def train_epoch(model, data_loader, loss_fn, optimizer, cuda):
         loss         = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
         losses      += loss.item()
 
-        top_p, top_class    = outputs[0].topk(1, dim=1)
-        target              = target[0].view(*top_class.shape).long()
-        equals              = top_class == target
-        correct             += torch.mean(equals.type(torch.FloatTensor)).item()
-
         pbar.set_description("%.5f" % loss.item())
         
         optimizer.zero_grad()
@@ -45,9 +39,8 @@ def train_epoch(model, data_loader, loss_fn, optimizer, cuda):
         optimizer.step()
     
     losses /= len(data_loader)
-    acc     = correct / len(data_loader)
 
-    return losses, acc
+    return losses
     
 def test_epoch(model, data_loader, loss_fn, cuda):
     # test
@@ -55,7 +48,6 @@ def test_epoch(model, data_loader, loss_fn, cuda):
         model.eval()
         
         losses      = 0.0
-        correct     = 0.0
         for batch_idx, (data, target) in enumerate(data_loader):
             if not type(data) in (tuple, list):
                 data = (data,)
@@ -78,13 +70,7 @@ def test_epoch(model, data_loader, loss_fn, cuda):
             loss_outputs = loss_fn(*loss_inputs)
             loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
             losses += loss.item()
-            
-            top_p, top_class    = outputs[0].topk(1, dim=1)
-            target              = target[0].view(*top_class.shape).long()
-            equals              = top_class == target
-            correct             += torch.mean(equals.type(torch.FloatTensor)).item()
-        
-        losses /= len(test_loader)
-        acc     = correct / len(test_loader)
+                    
+        losses /= len(data_loader)
 
-        return losses, acc
+        return losses

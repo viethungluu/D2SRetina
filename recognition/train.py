@@ -162,7 +162,8 @@ def main():
 		selector = RandomNegativeTripletSelector(args.soft_margin)
 	else:
 		selector = AllTripletSelector()
-	loss_fn = TripletLoss(selector, soft_margin=args.soft_margin)
+	train_loss_fn 	= TripletLoss(selector, soft_margin=args.soft_margin)
+	test_loss_fn 	= TripletLoss(AllTripletSelector(), soft_margin=args.soft_margin)
 
 	# define learning rate scheduler
 	lr_scheduler = LrScheduler(args.epoch_decay_start, args.n_epoch, args.lr)
@@ -171,14 +172,14 @@ def main():
 	for epoch in range(init_epoch, init_epoch + args.n_epoch):
 		lr_scheduler.adjust_learning_rate(optimizer, epoch - 1, args.optim)
 
-		train_loss, train_acc = train_epoch(model, train_loader, loss_fn, optimizer, cuda)
+		train_loss = train_epoch(model, train_loader, train_loss_fn, optimizer, cuda)
 
 		if epoch % args.eval_freq == 0:
-			test_loss, test_acc = test_epoch(model, test_loader, loss_fn, cuda)
+			test_loss = test_epoch(model, test_loader, test_loss_fn, cuda)
 			
-			log.append([epoch, train_loss, train_acc, test_loss, test_acc])
-			print('Epoch [%d/%d], Train loss: %.4f, Train acc: %.4f, Test acc: %.4f, Test loss: %.4f' 
-				% (epoch, init_epoch + args.n_epoch, train_loss, train_acc, test_loss, test_acc))
+			log.append([epoch, train_loss, test_loss])
+			print('Epoch [%d/%d], Train loss: %.4f, Test loss: %.4f' 
+				% (epoch, init_epoch + args.n_epoch, train_loss, test_loss))
 
 		if epoch % args.save_freq == 0:
 			torch.save({
@@ -190,7 +191,7 @@ def main():
 	with open(os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.tripletselector)), mode='w', newline='') as csv_f:
 		writer = csv.writer(csv_f)
 		# write header
-		writer.writerow(["epoch", "train_loss", "train_acc", "test_loss", "test_acc"])
+		writer.writerow(["epoch", "train_loss", "test_loss"])
 		writer.writerows(log)
 
 if __name__ == '__main__':
