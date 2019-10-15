@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 import matplotlib
 import matplotlib.pyplot as plt
 
+from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
 from models import load_model
@@ -60,7 +61,11 @@ def main():
 		model.cuda()
 
 	embeddings, labels 	= extract_embeddings(data_loader, model, cuda=cuda)
-	embeddings_tsne 	= TSNE(n_components=2, metric="euclidean").fit_transform(embeddings)
+	# using PCA to reduce a reasonable amount of dimensionality first
+	pca = PCA(n_components=50)
+	embeddings_pca =  pca.fit_transform(embeddings)
+
+	embeddings_tsne 	= TSNE(n_components=2, metric="euclidean").fit_transform(embeddings_pca)
 	plot_embeddings(embeddings_tsne, labels, dataset.num_classes())
 
 if __name__ == '__main__':
