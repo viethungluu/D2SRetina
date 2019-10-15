@@ -37,7 +37,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1)
 # dataset params
 parser.add_argument('--coco-path', type=str, help='', default='')
-parser.add_argument('--max_image_size', type=int, help='Resize/padding input image to input_size.', default=224)
+parser.add_argument('--target-size', type=int, help='Resize/padding input image to target-size.', default=224)
 parser.add_argument('--augment', help='Add data augmentation to training', action='store_true')
 parser.add_argument('--num_workers', type=int, help='Number of workers for data loader', default=1)
 # model params
@@ -119,11 +119,11 @@ def model_evaluation(model, train_loader, val_loader, test_loader, plot=True, em
 def main():
 	transforms_args = [transforms.ToTensor(), transforms.Normalize([127.5, 127.5, 127.5], [1.0, 1.0, 1.0])]
 
-	train_dataset 	= CoCoDataset(args.coco_path, "training", transform=transforms.Compose(transforms_args))
-	test_dataset 	= CoCoDataset(args.coco_path, "validation_wo_occlusion", transform=transforms.Compose(transforms_args))
+	train_dataset 	= CoCoDataset(args.coco_path, "training", target_size=args.target_size, transform=transforms.Compose(transforms_args))
+	test_dataset 	= CoCoDataset(args.coco_path, "validation_wo_occlusion", target_size=args.target_size, transform=transforms.Compose(transforms_args))
 			
-	train_loader 	= DataLoader(train_dataset, batch_size=1, shuffle=True, **kwargs)
-	test_loader 	= DataLoader(test_dataset, 	batch_size=1, shuffle=False, **kwargs)
+	train_loader 	= DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, **kwargs)
+	test_loader 	= DataLoader(test_dataset, 	batch_size=args.batch_size, shuffle=False, **kwargs)
 
 	# init model
 	model, optim_state_dict = load_model(args.backbone, args.snapshot)
