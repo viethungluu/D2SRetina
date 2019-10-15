@@ -71,53 +71,6 @@ kwargs = {'num_workers': args.num_workers, 'pin_memory': True} if cuda else {} #
 torch.manual_seed(args.seed)
 if cuda:
 	torch.cuda.manual_seed(args.seed)
-
-def plot_embeddings(embeddings, targets, classes, xlim=None, ylim=None):
-	plt.figure(figsize=(10, 10))
-	for i in range(n_classes):
-		inds = np.where(targets==i)[0]
-		plt.scatter(embeddings[inds, 0], embeddings[inds, 1], alpha=0.5)
-	if xlim:
-		plt.xlim(xlim[0], xlim[1])
-	if ylim:
-		plt.ylim(ylim[0], ylim[1])
-
-	plt.legend(classes)
-
-def extract_embeddings(dataloader, model, embedding_size=2048):
-	with torch.no_grad():
-		model.eval()
-		embeddings = np.zeros((len(dataloader.dataset), embedding_size))
-		labels = np.zeros(len(dataloader.dataset))
-		k = 0
-		for images, target in dataloader:
-			if cuda:
-				images = images.cuda()
-			embeddings[k:k+len(images)] = model.forward(images).data.cpu().numpy()
-			labels[k:k+len(images)] = target.numpy()
-			k += len(images)
-	return embeddings, labels
-
-def model_evaluation(model, train_loader, val_loader, test_loader, plot=True, embedding_size=2048):
-	train_embeddings_otl, train_labels_otl 	= extract_embeddings(train_loader, model, embedding_size=embedding_size)
-	val_embeddings_otl, val_labels_otl 		= extract_embeddings(val_loader, model, embedding_size=embedding_size)
-	test_embeddings_otl, test_labels_otl 	= extract_embeddings(test_loader, model, embedding_size=embedding_size)
-
-	if plot:
-		embeddings_otl = np.concatenate((train_embeddings_otl, val_embeddings_otl, test_embeddings_otl))
-		embeddings_tsne = TSNE(n_components=2).fit_transform(embeddings_otl)
-
-		labels_otl = np.concatenate((train_labels_otl, val_labels_otl, test_labels_otl)) 
-
-		plot_embeddings(embeddings_tsne, labels_otl, classes)
-		plot_embeddings(embeddings_tsne[:train_embeddings_otl.shape[0], ...], train_labels_otl, classes)
-		plot_embeddings(embeddings_tsne[train_embeddings_otl.shape[0]: train_embeddings_otl.shape[0] + val_embeddings_otl.shape[0], ...], val_labels_otl, classes)
-		plot_embeddings(embeddings_tsne[train_embeddings_otl.shape[0] + val_embeddings_otl.shape[0]:, ...], test_labels_otl, classes)
-
-	clf = KNeighborsClassifier(n_neighbors=6, metric='l2', n_jobs=-1, weights="distance")
-	clf.fit(np.concatenate((train_embeddings_otl, val_embeddings_otl)), np.concatenate((train_labels_otl, val_labels_otl)))
-	y_pred = clf.predict_proba(test_embeddings_otl)
-	return y_pred, test_labels_otl
 	
 def main():
 	transforms_args = [transforms.ToTensor(), transforms.Normalize([127.5, 127.5, 127.5], [1.0, 1.0, 1.0])]
