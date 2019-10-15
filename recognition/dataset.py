@@ -80,6 +80,8 @@ class CoCoDataset(Dataset):
 		bbox 	= self.annotations['bboxes'][index]
 		label 	= self.annotations['labels'][index]
 
+		print(imgId, bbox, label)
+
 
 		image_info 	= self.coco.loadImgs(imgId)[0]
 		path 		= os.path.join(self.data_dir, 'images', image_info['file_name'])
@@ -153,6 +155,7 @@ if __name__ == '__main__':
 	args 	= parser.parse_args(sys.argv[1:])
 
 	ds = CoCoDataset(args.coco_path, set_name="validation_wo_occlusion_object")
+	print(len(ds))
 	
 	plt.figure(figsize=(20, 10))
 	columns = 2
