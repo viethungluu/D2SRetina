@@ -60,7 +60,7 @@ class CoCoDataset(Dataset):
 	def _load_annotations(self):
 		self.annotations     = {'labels': np.empty((0,)), 'bboxes': np.empty((0, 4)), 'imgIds': np.empty((0,), dtype=np.int)}
 
-		for image_id in self.image_ids:
+		for i, image_id in enumerate(self.image_ids):
 			annotations_ids = self.coco.getAnnIds(imgIds=image_id, iscrowd=False)	
 			if len(annotations_ids) == 0:
 				continue
@@ -79,16 +79,14 @@ class CoCoDataset(Dataset):
 						a['bbox'][0] + a['bbox'][2],
 						a['bbox'][1] + a['bbox'][3],
 					]]], axis=0)
-				self.annotations['imgIds'] = np.concatenate([self.annotations['imgIds'], [image_id]], axis=0)
+				self.annotations['imgIds'] = np.concatenate([self.annotations['imgIds'], [i]], axis=0)
 
 	def load_image(self, index):
 		imgId 	= self.annotations['imgIds'][index]
 		bbox 	= self.annotations['bboxes'][index]
 		label 	= self.annotations['labels'][index]
 
-		print(self.image_ids[0], imgId, bbox, self.coco_label_to_name(self.label_to_coco_label(label)))
-
-		image_info 	= self.coco.loadImgs(imgId)[0]
+		image_info 	= self.coco.loadImgs(self.image_ids[imgId])[0]
 		path 		= os.path.join(self.data_dir, 'images', image_info['file_name'])
 		image 		= np.asarray(Image.open(path).convert('RGB'))
 
