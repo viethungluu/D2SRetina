@@ -81,7 +81,7 @@ class CoCoDataset(Dataset):
 					]]], axis=0)
 				self.annotations['imgIds'] = np.concatenate([self.annotations['imgIds'], [i]], axis=0)
 
-	def load_image(self, index):
+	def _load_image(self, index):
 		imgId 	= self.annotations['imgIds'][index]
 		bbox 	= self.annotations['bboxes'][index]
 		label 	= self.annotations['labels'][index]
@@ -107,6 +107,9 @@ class CoCoDataset(Dataset):
 	def __len__(self):
 		# 
 		return len(self.annotations['imgIds'])
+
+	def all_targets():
+		return self.annotations['labels']
 
 	def num_classes(self):
 		""" Number of classes in the dataset. For COCO this is 80.
@@ -170,7 +173,7 @@ if __name__ == '__main__':
 	columns = 3
 	num_images = args.num_images if args.num_images < len(ds) else len(ds)
 	for i in range(num_images):
-		image, label   = ds.load_image(i)
+		image, label   = ds._load_image(i)
 		ax = plt.subplot(num_images // columns + 1, columns, i + 1)
 		ax.imshow(image)
 		ax.title.set_text(ds.coco_label_to_name(ds.label_to_coco_label(label)))

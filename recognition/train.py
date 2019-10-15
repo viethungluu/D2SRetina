@@ -22,11 +22,11 @@ from models import load_model
 from dataset import CoCoDataset
 
 from samplers import TrainBalancedBatchSampler, TestBalancedBatchSampler
-from losses import *
-from trainer import fit, train_coteaching, eval_coteaching
-from scheduler import LrScheduler, adjust_batch_size
+from losses import TripletLoss
+from triplet_selectors import HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector, AllTripletSelector
+from scheduler import LrScheduler
+from utils import train_epoch, test_epoch
 
-from visualization import visualize_images
 from contanst import *
 
 # Ignore warnings
@@ -39,24 +39,27 @@ parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--coco-path', type=str, help='', default='')
 parser.add_argument('--target-size', type=int, help='Resize/padding input image to target-size.', default=224)
 parser.add_argument('--augment', help='Add data augmentation to training', action='store_true')
-parser.add_argument('--num_workers', type=int, help='Number of workers for data loader', default=1)
+parser.add_argument('--num-workers', type=int, help='Number of workers for data loader', default=1)
 # model params
 parser.add_argument('--backbone', type=str, help='ResNet18/34/50/101/152', default='ResNet50')
-parser.add_argument('--batch_sampler', type=str, help='balanced', default = 'balanced')
-parser.add_argument('--hard_mining', help='Learn from hard samples instead of easy ones', action='store_true')
 parser.add_argument('--optim', help='Optimizer to use: SGD or Adam', default='Adam')
 # triplet params
-parser.add_argument('--soft_margin', help='Use soft margin.', action='store_true')
-# training params
-parser.add_argument('--lr', type = float, default=3.0)
-parser.add_argument('--n_epoch', type=int, default=100)
-parser.add_argument('--epoch_decay_start', type=int, default=30)
-parser.add_argument('--batch_size', type=int, help="Mini-batch size.", default=8)
+parser.add_argument('--soft-margin', 		help='Use soft margin.', action='store_true')
+parser.add_argument('--K', 					type=int, 	default=4, help="Number of samples per class for each mini batch. batch_size = K x P")
+parser.add_argument('--P', 					type=int, 	default=8, help="Number of classes for each mini batch. batch_size = K x P")
+parser.add_argument('--triplet-selector',	type=str, 	default='all', help='Triplet sampling strategy: "all", "hard", "semi", "random". Default: "all"')
 
-parser.add_argument('--eval_freq', type=int, default=5)
-parser.add_argument('--save_freq', type=int, default=5)
+# training params
+parser.add_argument('--lr', 				type=float, default=3.0)
+parser.add_argument('--n-epoch', 			type=int, 	default=100)
+parser.add_argument('--n-batches', 			type=int, 	default=500, help="Number of mini batches for each training epoch. n_batches for testing epoch is fixed to 100")
+parser.add_argument('--epoch-decay-start', 	type=int, 	default=30)
+
+parser.add_argument('--eval-freq', type=int, default=5)
+parser.add_argument('--save-freq', type=int, default=5)
 # test/finetuning params
-parser.add_argument('--snapshot', type=str, help='Resume training from snapshot', default=None)
+parser.add_argument('--snapshot', 		type=str, help='Resume training from snapshot', default=None)
+parser.add_argument('--snapshot-path', 	type=str, help='Path to save snapshot', default='.')
 
 args = parser.parse_args()
 
@@ -121,12 +124,23 @@ def main():
 
 	train_dataset 	= CoCoDataset(args.coco_path, "training", target_size=args.target_size, transform=transforms.Compose(transforms_args))
 	test_dataset 	= CoCoDataset(args.coco_path, "validation_wo_occlusion", target_size=args.target_size, transform=transforms.Compose(transforms_args))
+
+	train_batch_sampler = TrainBalancedBatchSampler(torch.from_numpy(np.array(train_dataset.all_targets())),
+													K=args.K,
+													P=args.P,
+													n_batches=args.n_batches)
+
+	test_batch_sampler = TestBalancedBatchSampler(torch.from_numpy(np.array(test_dataset.all_targets())), 
+													K=args.K,
+													P=n_classes,
+													n_batches=100)
+		
 			
-	train_loader 	= DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, **kwargs)
-	test_loader 	= DataLoader(test_dataset, 	batch_size=args.batch_size, shuffle=False, **kwargs)
+	train_loader 	= DataLoader(train_dataset, batch_sampler=train_batch_sampler, **kwargs)
+	test_loader 	= DataLoader(test_dataset, 	batch_sampler=test_batch_sampler, **kwargs)
 
 	# init model
-	model, optim_state_dict = load_model(args.backbone, args.snapshot)
+	model, optim_state_dict, init_epoch = load_model(args.backbone, args.snapshot)
 	if cuda:
 		model.cuda()
 
@@ -142,50 +156,38 @@ def main():
 		optimizer.load_state_dict(optim_state_dict)
 
 	# define loss function
-	loss_fn = CoTeachingTripletLoss(self_taught=args.self_taught, soft_margin=args.soft_margin, hard_mining=args.hard_mining)
+	if args.triplet_selector == "hard":
+		selector = HardestNegativeTripletSelector(args.soft_margin)
+	elif args.triplet_selector == "semi":
+		selector = SemihardNegativeTripletSelector(args.soft_margin)
+	elif args.triplet_selector == "random":
+		selector = RandomNegativeTripletSelector(args.soft_margin)
+	else:
+		selector = AllTripletSelector()
+	loss_fn = TripletLoss(selector, soft_margin=args.soft_margin)
+
 	# define learning rate scheduler
 	lr_scheduler = LrScheduler(args.epoch_decay_start, args.n_epoch, args.lr)
 
-	train_log = []
-	for epoch in range(1, args.n_epoch + 1):
-		lr_scheduler.adjust_learning_rate(optimizer1, epoch - 1, args.optim)
+	log = []
+	for epoch in range(init_epoch, init_epoch + args.n_epoch):
+		lr_scheduler.adjust_learning_rate(optimizer, epoch - 1, args.optim)
 
-		train_loss_1, train_loss_2, total_train_loss_1, total_train_loss_2 = \
-			train_coteaching(train_loader, loss_fn, model1, optimizer1, model2, optimizer2, rate_schedule, epoch, cuda)
+		train_loss, train_acc = train_epoch(model, train_loader, loss_fn, optimizer, cuda)
 
 		if epoch % args.eval_freq == 0:
-			test_loss_1, test_loss_2, test_acc_1, test_acc_2 = \
-				eval_coteaching(model1, model2, test_loader, loss_fn, cuda, metric_acc=metric_acc)
+			test_loss, test_acc = test_epoch(model, test_loader, loss_fn, cuda)
 			
-			train_log.append([train_loss_1, train_loss_2, total_train_loss_1, total_train_loss_2, test_loss_1, test_loss_2])
-			print('Epoch [%d/%d], Train loss1: %.4f/%.4f, Train loss2: %.4f/%.4f, Test accuracy1: %.4F, Test accuracy2: %.4f, Test loss1: %.4f, Test loss2: %.4f' 
-				% (epoch, args.n_epoch, train_loss_1, total_train_loss_1, train_loss_2, total_train_loss_2, test_acc_1, test_acc_2, test_loss_1, test_loss_2))
-
-			# visualize training log
-			train_log_data = np.array(train_log)
-			legends = ['train_loss_1', 'train_loss_2', 'total_train_loss_1', 'total_train_loss_2', 'test_loss_1', 'test_loss_2']
-			styles = ['b--', 'r--', 'b-.', 'r-.', 'b-', 'r-']
-			epoch_count = range(1, train_log_data.shape[0] + 1)
-			for i in range(len(legends)):
-				plt.loglog(epoch_count, train_log_data[:, i], styles[i])
-			plt.legend(legends)
-			plt.ylabel('loss')
-			plt.xlabel('epochs')
-			plt.savefig(os.path.join(MODEL_DIR, '%s_%s_%.2f.png' % (args.dataset, args.loss_fn, args.keep_rate)))
-			plt.clf()
+			log.append([epoch, train_loss, train_acc, test_loss, test_loss])
+			print('Epoch [%d/%d], Train loss: %.4f, Train acc: %.4f, Test acc: %.4f, Test loss: %.4f' 
+				% (epoch, init_epoch + args.n_epoch, train_loss, train_acc, test_loss, test_acc))
 
 		if epoch % args.save_freq == 0:
 			torch.save({
-						'model_state_dict': model1.state_dict(),
-						'optimizer_state_dict': optimizer1.state_dict(),
+						'model_state_dict': model.state_dict(),
+						'optimizer_state_dict': optimizer.state_dict(),
 						'epoch': epoch
-						}, os.path.join(MODEL_DIR, '%s_%s_%s_%.2f_1_%d.pth' % (args.dataset, args.backbone, args.loss_fn, args.keep_rate, epoch)))
-			
-			torch.save({
-						'model_state_dict': model2.state_dict(),
-						'optimizer_state_dict': optimizer2.state_dict(),
-						'epoch': epoch
-						}, os.path.join(MODEL_DIR, '%s_%s_%s_%.2f_2_%d.pth' % (args.dataset, args.backbone, args.loss_fn, args.keep_rate, epoch)))
+						}, os.path.join(args.snapshot_path, '%s_%s_%d.pth' % (args.backbone, args.tripletselector, epoch)))
 
 if __name__ == '__main__':
 	main()

@@ -91,12 +91,14 @@ def load_model(backbone, snapshot=None, imagenet_weights=True):
 		raise ValueError("backbone must be one of ResNet18, ResNet34, ResNet50, ResNet101, ResNet152")
 
 	optim_state_dict = None
+	init_epoch 		 = 0
 	if snapshot is not None:
 		# continue training
 		checkpoint = torch.load(snapshot)
 		if type(checkpoint) is dict:
 			model_state_dict = checkpoint['model_state_dict']
 			optim_state_dict = checkpoint['optimizer_state_dict']
+			init_epoch 		 = checkpoint['epoch']
 		else:
 			model_state_dict = checkpoint
 		
@@ -106,7 +108,7 @@ def load_model(backbone, snapshot=None, imagenet_weights=True):
 			# init a new model with ImageNet weights
 			model.load_state_dict(model_zoo.load_url(model_urls[backbone]))
 	
-	return model, optim_state_dict
+	return model, optim_state_dict, init_epoch
 
 if __name__ == '__main__':
 	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

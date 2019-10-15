@@ -21,14 +21,14 @@ class TripletSelector(object):
     def get_triplets(self, probs, labels):
         raise NotImplementedError
 
-class AllTripletSelector(TripletSelector):
+class FunctionAllTripletSelector(TripletSelector):
     """
     Returns all possible triplets
     May be impractical in most cases
     """
 
     def __init__(self):
-        super(AllTripletSelector, self).__init__()
+        super(FunctionAllTripletSelector, self).__init__()
 
     def get_triplets(self, embeddings, labels):
         labels = labels.cpu().data.numpy()
@@ -130,3 +130,5 @@ def RandomNegativeTripletSelector(soft_margin, cpu=False): return FunctionNegati
 def SemihardNegativeTripletSelector(soft_margin, cpu=False): return FunctionNegativeTripletSelector(soft_margin=soft_margin,
                                                                                   negative_selection_fn=lambda x: semihard_negative(x, margin),
                                                                                   cpu=cpu)
+
+def AllTripletSelector(): return FunctionAllTripletSelector()
