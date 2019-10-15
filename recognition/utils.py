@@ -74,3 +74,17 @@ def test_epoch(model, data_loader, loss_fn, cuda):
         losses /= len(data_loader)
 
         return losses
+
+def extract_embeddings(data_loader, model, embedding_size=2048, cuda=True):
+    with torch.no_grad():
+        model.eval()
+        embeddings = np.zeros((len(data_loader.dataset), embedding_size))
+        labels = np.zeros(len(data_loader.dataset))
+        k = 0
+        for images, target in data_loader:
+            if cuda:
+                images = images.cuda()
+            embeddings[k: k+len(images)] = model.forward(images).data.cpu().numpy()
+            labels[k: k+len(images)] = target.numpy()
+            k += len(images)
+    return embeddings, labels

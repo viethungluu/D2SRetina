@@ -15,6 +15,7 @@ from sklearn.manifold import TSNE
 
 from models import load_model
 from dataset import CoCoDataset
+from utils import extract_embeddings
 
 # Ignore warnings
 import warnings
@@ -54,20 +55,6 @@ def plot_embeddings(embeddings, targets, n_classes, xlim=None, ylim=None):
 	plt.tight_layout()
 	plt.savefig("embeddings.png")
 
-def extract_embeddings(data_loader, model, embedding_size=2048):
-	with torch.no_grad():
-		model.eval()
-		embeddings = np.zeros((len(data_loader.dataset), embedding_size))
-		labels = np.zeros(len(data_loader.dataset))
-		k = 0
-		for images, target in data_loader:
-			if cuda:
-				images = images.cuda()
-			embeddings[k: k+len(images)] = model.forward(images).data.cpu().numpy()
-			labels[k: k+len(images)] = target.numpy()
-			k += len(images)
-	return embeddings, labels
-
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--coco-path', 		type=str, help='', default='')
@@ -90,7 +77,7 @@ def main():
 	if cuda:
 		model.cuda()
 
-	embeddings, labels 	= extract_embeddings(data_loader, model)
+	embeddings, labels 	= extract_embeddings(data_loader, model, cuda=cuda)
 	embeddings_tsne 	= TSNE(n_components=2).fit_transform(embeddings)
 	plot_embeddings(embeddings_tsne, labels, dataset.num_classes())
 
