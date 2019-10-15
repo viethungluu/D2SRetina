@@ -38,7 +38,7 @@ def train_epoch(model, data_loader, loss_fn, optimizer, cuda):
         equals              = top_class == target
         correct             += torch.mean(equals.type(torch.FloatTensor)).item()
 
-        pbar.set_description("[%d/%d] %.5f" % (batch_idx, len(data_loader), loss.item()))
+        pbar.set_description("%.5f" % loss.item())
         
         optimizer.zero_grad()
         loss.backward()
