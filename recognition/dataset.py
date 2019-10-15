@@ -1,8 +1,8 @@
 import os
 import sys
-import argparse
 
 import numpy as np
+import argparse
 from PIL import Image
 
 import torch
