@@ -11,6 +11,9 @@ from torchvision import transforms
 
 from pycocotools.coco import COCO
 
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 class CoCoDataset(Dataset):
 	"""docstring for NoLabelFolder"""
 	def __init__(self, data_dir, set_name, transform=None):		
