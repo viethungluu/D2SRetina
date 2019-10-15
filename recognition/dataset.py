@@ -161,7 +161,7 @@ if __name__ == '__main__':
 
 	ds = CoCoDataset(args.coco_path, args.set_name)
 	
-	plt.figure((20, 20))
+	plt.figure(figsize=(20, 20))
 	columns = 3
 	num_images = args.num_images if args.num_images < len(ds) else len(ds)
 	for i in range(num_images):
