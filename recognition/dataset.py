@@ -11,14 +11,14 @@ from torchvision import transforms
 
 from pycocotools.coco import COCO
 
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+from image import resize_image
 
 class CoCoDataset(Dataset):
 	"""docstring for NoLabelFolder"""
-	def __init__(self, data_dir, set_name, transform=None):		
-		self.data_dir 	= data_dir
-		self.set_name 	= set_name
+	def __init__(self, data_dir, set_name, target_size=224, transform=None):		
+		self.data_dir 		= data_dir
+		self.set_name 		= set_name
+		self.target_size 	= target_size
 
 		print("Reading dataset from", os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
 		self.coco 		= COCO(os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
@@ -94,6 +94,8 @@ class CoCoDataset(Dataset):
 
 	def __getitem__(self, index):
 		image, label = self._load_image(index)
+		# resize image to target_size
+		image, _ 	 = resize_image(image, self.target_size)
 		
 		if self.transform:
 			image = self.transform(image)
@@ -161,6 +163,7 @@ if __name__ == '__main__':
 
 	ds = CoCoDataset(args.coco_path, args.set_name)
 	
+	import matplotlib.pyplot as plt
 	plt.figure(figsize=(20, 20))
 	columns = 3
 	num_images = args.num_images if args.num_images < len(ds) else len(ds)

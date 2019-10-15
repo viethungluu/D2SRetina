@@ -19,11 +19,13 @@ from sklearn.manifold import TSNE
 from sklearn.neighbors import KNeighborsClassifier
 
 from models import load_model
+from dataset import CoCoDataset
+
 from samplers import TrainBalancedBatchSampler, TestBalancedBatchSampler
 from losses import *
 from trainer import fit, train_coteaching, eval_coteaching
 from scheduler import LrScheduler, adjust_batch_size
-from dataset import NoLabelFolder
+
 from visualization import visualize_images
 from contanst import *
 
@@ -34,7 +36,7 @@ warnings.filterwarnings("ignore")
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1)
 # dataset params
-parser.add_argument('--coco', type=str, help='', default='')
+parser.add_argument('--coco-path', type=str, help='', default='')
 parser.add_argument('--max_image_size', type=int, help='Resize/padding input image to input_size.', default=224)
 parser.add_argument('--augment', help='Add data augmentation to training', action='store_true')
 parser.add_argument('--num_workers', type=int, help='Number of workers for data loader', default=1)
@@ -117,11 +119,8 @@ def model_evaluation(model, train_loader, val_loader, test_loader, plot=True, em
 def main():
 	transforms_args = [transforms.ToTensor(), transforms.Normalize([127.5, 127.5, 127.5], [1.0, 1.0, 1.0])]
 
-	train_dataset 	= ImageFolder(os.path.join(DATA_DIR, args.dataset, "train"),
-							transform=transforms.Compose(transforms_args))
-
-	test_dataset 	= ImageFolder(os.path.join(DATA_DIR, args.dataset, "val"),
-							transform=transforms.Compose(transforms_args))
+	train_dataset 	= CoCoDataset(args.coco_path, "training", transform=transforms.Compose(transforms_args))
+	test_dataset 	= CoCoDataset(args.coco_path, "validation_wo_occlusion", transform=transforms.Compose(transforms_args))
 			
 	train_loader 	= DataLoader(train_dataset, batch_size=1, shuffle=True, **kwargs)
 	test_loader 	= DataLoader(test_dataset, 	batch_size=1, shuffle=False, **kwargs)
@@ -149,10 +148,7 @@ def main():
 
 	train_log = []
 	for epoch in range(1, args.n_epoch + 1):
-		lr_scheduler.adjust_learning_rate(optimizer1, epoch - 1, args.large_batch, args.optim)
-		lr_scheduler.adjust_learning_rate(optimizer2, epoch - 1, args.large_batch, args.optim)
-
-		adjust_batch_size(train_batch_sampler, epoch, args.large_batch)
+		lr_scheduler.adjust_learning_rate(optimizer1, epoch - 1, args.optim)
 
 		train_loss_1, train_loss_2, total_train_loss_1, total_train_loss_2 = \
 			train_coteaching(train_loader, loss_fn, model1, optimizer1, model2, optimizer2, rate_schedule, epoch, cuda)

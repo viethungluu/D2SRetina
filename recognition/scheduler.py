@@ -10,15 +10,11 @@ class LrScheduler(object):
 		self.mom1 = 0.9
 		self.mom2 = 0.1
 
-	def adjust_learning_rate(self, optimizer, epoch, large_batch, optim_type):
-		if large_batch:
-			if epoch == 30 or epoch == 60 or epoch == 80:
-				self.lr = self.lr / 10.0
+	def adjust_learning_rate(self, optimizer, epoch, optim_type):
+		if epoch < self.epoch_decay_start:
+			lr = self.lr
 		else:
-			if epoch < self.epoch_decay_start:
-				lr = self.lr
-			else:
-				lr = float(self.n_epoch - epoch) / (self.n_epoch - self.epoch_decay_start) * self.lr
+			lr = float(self.n_epoch - epoch) / (self.n_epoch - self.epoch_decay_start) * self.lr
 		
 		if epoch < self.epoch_decay_start:
 			beta1 = self.mom1
