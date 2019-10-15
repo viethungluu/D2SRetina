@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore")
 
 cuda = torch.cuda.is_available()
 
-def plot_embeddings(embeddings, targets, xlim=None, ylim=None):
+def plot_embeddings(embeddings, targets, n_classes, xlim=None, ylim=None):
 	import matplotlib.pyplot as plt
 	plt.figure(figsize=(10, 10))
 	for i in range(n_classes):
@@ -74,7 +74,7 @@ def main():
 
 	embeddings, labels 	= extract_embeddings(data_loader, model)
 	embeddings_tsne 	= TSNE(n_components=2).fit_transform(embeddings)
-	plot_embeddings(embeddings_tsne, labels)
+	plot_embeddings(embeddings_tsne, dataset.num_classes(), labels)
 
 if __name__ == '__main__':
 	main()
