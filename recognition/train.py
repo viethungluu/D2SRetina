@@ -188,9 +188,9 @@ def main():
 						'model_state_dict': model.state_dict(),
 						'optimizer_state_dict': optimizer.state_dict(),
 						'epoch': epoch
-						}, os.path.join(args.snapshot_path, '%s_%s_%d.pth' % (args.backbone, args.tripletselector, epoch)))
+						}, os.path.join(args.snapshot_path, '%s_%s_%d.pth' % (args.backbone, args.triplet_selector, epoch)))
 
-	with open(os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.tripletselector)), mode='w', newline='') as csv_f:
+	with open(os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.triplet_selector)), mode='w', newline='') as csv_f:
 		writer = csv.writer(csv_f)
 		# write header
 		writer.writerow(["epoch", "train_loss", "test_loss"])
