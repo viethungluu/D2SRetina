@@ -63,14 +63,14 @@ class CoCoDataset(Dataset):
 				if a['bbox'][2] < 1 or a['bbox'][3] < 1:
 					continue
 
-				self.annotations['labels'] = np.concatenate([annotations['labels'], [self.coco_label_to_label(a['category_id'])]], axis=0)
-				self.annotations['bboxes'] = np.concatenate([annotations['bboxes'], [[
+				self.annotations['labels'] = np.concatenate([self.annotations['labels'], [self.coco_label_to_label(a['category_id'])]], axis=0)
+				self.annotations['bboxes'] = np.concatenate([self.annotations['bboxes'], [[
 						a['bbox'][0],
 						a['bbox'][1],
 						a['bbox'][0] + a['bbox'][2],
 						a['bbox'][1] + a['bbox'][3],
 					]]], axis=0)
-				self.annotations['imgIds'] = np.concatenate([annotations['imgIds'], [image_id]], axis=0)
+				self.annotations['imgIds'] = np.concatenate([self.annotations['imgIds'], [image_id]], axis=0)
 
 	def load_image(self, index):
 		imgId 	= self.annotations['imgIds'][index]
