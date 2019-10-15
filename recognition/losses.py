@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from selectors import AllTripletSelector, HardestNegativeTripletSelector
+from triplet_selectors import AllTripletSelector, HardestNegativeTripletSelector
 
 class TripletLoss(nn.Module):
     def __init__(self, soft_margin=False, hard_mining=False, size_average=True):
