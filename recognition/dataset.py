@@ -24,6 +24,9 @@ class CoCoDataset(Dataset):
 		self._load_classes()
 		self._load_annotations()
 
+		print("Number of image:", len(self.annotations))
+		print("Number of classes:", self.num_classes())
+
 		self.transform 	= transform
 
 		super(CoCoDataset, self).__init__()
@@ -155,7 +158,6 @@ if __name__ == '__main__':
 	args 	= parser.parse_args(sys.argv[1:])
 
 	ds = CoCoDataset(args.coco_path, set_name="validation_wo_occlusion_object")
-	print(len(ds))
 	
 	plt.figure(figsize=(20, 10))
 	columns = 2
