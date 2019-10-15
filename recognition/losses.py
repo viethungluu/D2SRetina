@@ -9,7 +9,7 @@ class TripletLoss(nn.Module):
     def __init__(self, selector, soft_margin=False, size_average=True):
         self.soft_margin    = soft_margin
         self.size_average   = size_average
-        self.selector_func  = selector
+        self.selector       = selector
 
         super(TripletLoss, self).__init__()
 
