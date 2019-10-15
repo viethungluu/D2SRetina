@@ -102,7 +102,7 @@ class CoCoDataset(Dataset):
 
 	def __len__(self):
 		# 
-		return len(self.annotations)
+		return len(self.annotations['imgIds'])
 
 	def num_classes(self):
 		""" Number of classes in the dataset. For COCO this is 80.
@@ -163,6 +163,7 @@ if __name__ == '__main__':
 	
 	plt.figure(figsize=(20, 10))
 	columns = 2
+	num_images = args.num_images if args.num_images < len(ds) else len(ds)
 	for i in range(num_images):
 		image, label   = ds.load_image(i)
 		ax = plt.subplot(num_images // columns + 1, columns, i + 1)
