@@ -59,7 +59,7 @@ def main():
 
 	clf = KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
 	clf.fit(train_embeddings, train_labels)
-	pickle.dump(clf, open(os.path.join(args.snapshot_path, '%s_%s_%d.pkl' % (args.backbone, args.triplet_selector, epoch)), 'wb'))
+	pickle.dump(clf, open(os.path.join(args.snapshot_path, '%s.pkl' % (os.path.basename(args.snapshot).split(".")[0])), 'wb'))
 
 	y_prob = clf.predict_proba(test_embeddings)
 	y_pred = np.argmax(y_prob, axis=1)
