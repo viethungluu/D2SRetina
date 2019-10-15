@@ -4,6 +4,8 @@ import numpy as np
 import argparse, sys
 
 import torch
+import torch.nn.functional as F
+from torchvision import transforms
 
 import matplotlib
 import matplotlib.pyplot as plt
