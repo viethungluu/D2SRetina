@@ -20,6 +20,8 @@ from dataset import CoCoDataset
 import warnings
 warnings.filterwarnings("ignore")
 
+cuda = torch.cuda.is_available()
+
 def plot_embeddings(embeddings, targets, xlim=None, ylim=None):
 	import matplotlib.pyplot as plt
 	plt.figure(figsize=(10, 10))
@@ -58,7 +60,6 @@ def main():
 	parser.add_argument('--num-workers', 	type=int, help='Number of workers for data loader', default=1)
 	args = parser.parse_args()
 
-	cuda = torch.cuda.is_available()
 	# Set up data loaders parameters
 	kwargs = {'num_workers': args.num_workers, 'pin_memory': True} if cuda else {} #
 
