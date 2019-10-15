@@ -86,13 +86,13 @@ class CoCoDataset(Dataset):
 		bbox 	= self.annotations['bboxes'][index]
 		label 	= self.annotations['labels'][index]
 
-		print(imgId, bbox, self.coco_label_to_name(self.label_to_coco_label(label)))
+		print(self.image_ids[0], imgId, bbox, self.coco_label_to_name(self.label_to_coco_label(label)))
 
-		image_info 	= self.coco.loadImgs(self.image_ids[0])[0]
+		image_info 	= self.coco.loadImgs(imgId)[0]
 		path 		= os.path.join(self.data_dir, 'images', image_info['file_name'])
 		image 		= np.asarray(Image.open(path).convert('RGB'))
 
-		return image[bbox[0]: bbox[2], bbox[1]: bbox[3], ...], label
+		return image[int(bbox[0]): int(bbox[2]), int(bbox[1]): int(bbox[3]), ...], label
 
 	def __getitem__(self, index):
 		image, label = self._load_image(index)
