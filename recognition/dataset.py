@@ -24,8 +24,6 @@ class CoCoDataset(Dataset):
 		self.coco 		= COCO(os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
 		
 		self.image_ids 	= self.coco.getImgIds()
-		print(type(self.image_ids[0]))
-		
 		self._load_classes()
 		self._load_annotations()
 
@@ -61,7 +59,7 @@ class CoCoDataset(Dataset):
 		# print(self.labels)
 
 	def _load_annotations(self):
-		self.annotations     = {'labels': np.empty((0,)), 'bboxes': np.empty((0, 4)), 'imgIds': np.empty((0,))}
+		self.annotations     = {'labels': np.empty((0,)), 'bboxes': np.empty((0, 4)), 'imgIds': np.empty((0,), dtype=np.int)}
 
 		for image_id in self.image_ids:
 			annotations_ids = self.coco.getAnnIds(imgIds=image_id, iscrowd=False)	
