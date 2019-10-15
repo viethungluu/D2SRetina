@@ -103,7 +103,7 @@ def load_model(backbone, snapshot=None, imagenet_weights=True):
 		else:
 			model_state_dict = checkpoint
 		
-		model.load_state_dict(model_state_dict)
+		model.load_state_dict(model_state_dict, strict=False)
 	else:
 		if imagenet_weights:
 			# init a new model with ImageNet weights
