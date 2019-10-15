@@ -108,7 +108,7 @@ class CoCoDataset(Dataset):
 		# 
 		return len(self.annotations['imgIds'])
 
-	def all_targets():
+	def all_targets(self):
 		return self.annotations['labels']
 
 	def num_classes(self):
