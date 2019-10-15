@@ -31,7 +31,7 @@ class TripletLoss(nn.Module):
         if targets.is_cuda:
             triplets = triplets.cuda()
 
-        loss = self._triplet_loss(emb1, triplets)
+        loss = self._triplet_loss(emb, triplets)
 
         if self.size_average: return loss.mean()
         else: return loss.sum()
