@@ -58,7 +58,7 @@ def main():
 	test_embeddings, test_labels 	= extract_embeddings(test_loader, model, cuda=cuda)
 
 	dist_mtx 	= pdist(test_embeddings, train_embeddings)
-	indices 	= np.argmax(dist_mtx, axis=1)
+	indices 	= np.argmin(dist_mtx, axis=1)
 	y_pred 		= train_labels[indices]
 
 	# clf = KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
