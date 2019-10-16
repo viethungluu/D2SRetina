@@ -118,6 +118,7 @@ def main():
 		selector = RandomNegativeTripletSelector(args.soft_margin)
 	else:
 		selector = AllTripletSelector()
+	
 	train_loss_fn 	= TripletLoss(selector, soft_margin=args.soft_margin)
 	test_loss_fn 	= TripletLoss(AllTripletSelector(), soft_margin=args.soft_margin)
 
@@ -127,6 +128,8 @@ def main():
 	log_file = os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.triplet_selector)) 
 	for epoch in range(init_epoch, init_epoch + args.n_epoch):
 		lr_scheduler.adjust_learning_rate(optimizer, epoch - 1, args.optim)
+		for param_group in optimizer.param_groups:
+			print("LR: ", param_group['lr'])
 
 		train_loss = train_epoch(model, train_loader, train_loss_fn, optimizer, cuda)
 

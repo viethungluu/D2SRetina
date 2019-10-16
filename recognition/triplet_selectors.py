@@ -106,7 +106,9 @@ class FunctionNegativeTripletSelector(TripletSelector):
             ap_distances = distance_matrix[anchor_positives[:, 0], anchor_positives[:, 1]]
             for anchor_positive, ap_distance in zip(anchor_positives, ap_distances):
                 an_distances = distance_matrix[torch.LongTensor(np.array([anchor_positive[0]])), torch.LongTensor(negative_indices)]
+                
                 loss = _apply_margin(ap_distance, an_distances, self.soft_margin)
+
                 hard_negative = self.negative_selection_fn(loss.cpu().data.numpy())
                 if hard_negative is not None:
                     hard_negative = negative_indices[hard_negative]
