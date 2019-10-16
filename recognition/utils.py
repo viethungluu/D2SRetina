@@ -1,5 +1,7 @@
 import numpy as np
 
+import torch
+
 def extract_embeddings(data_loader, model, embedding_size=2048, cuda=True):
     with torch.no_grad():
         model.eval()
