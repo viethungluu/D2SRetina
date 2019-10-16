@@ -95,6 +95,7 @@ def main():
 
 	# init model
 	model, optim_state_dict, init_epoch = load_model(args.backbone, args.snapshot)
+	print("Resume training from epoch", init_epoch)
 	if cuda:
 		model.cuda()
 
@@ -126,7 +127,7 @@ def main():
 	lr_scheduler = LrScheduler(args.epoch_decay_start, args.n_epoch, args.lr)
 
 	log_file = os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.triplet_selector)) 
-	for epoch in range(init_epoch, init_epoch + args.n_epoch):
+	for epoch in range(init_epoch, args.n_epoch):
 		lr_scheduler.adjust_learning_rate(optimizer, epoch - 1, args.optim)
 		for param_group in optimizer.param_groups:
 			print("LR: ", param_group['lr'])
@@ -136,7 +137,7 @@ def main():
 		if epoch % args.eval_freq == 0:
 			test_loss = test_epoch(model, test_loader, test_loss_fn, cuda)
 			
-			print('Epoch [%d/%d], Train loss: %.4f, Test loss: %.4f' % (epoch, init_epoch + args.n_epoch, train_loss, test_loss))
+			print('Epoch [%d/%d], Train loss: %.4f, Test loss: %.4f' % (epoch, args.n_epoch, train_loss, test_loss))
 			log = [epoch, train_loss, test_loss]
 			if os.path.isfile(log_file):
 				with open(log_file, mode='a', newline='') as csv_f:

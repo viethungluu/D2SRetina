@@ -22,7 +22,7 @@ class LrScheduler(object):
 			beta1 = self.mom2
 
 		for param_group in optimizer.param_groups:
-			param_group['lr'] = self.lr
+			param_group['lr'] = lr
 			
 			if optim_type == "Adam":
 				param_group['betas'] = (beta1, 0.999) # Only change beta1
