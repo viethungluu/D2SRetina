@@ -20,7 +20,9 @@ class TripletLoss(nn.Module):
         if self.soft_margin:
             ap_distances = (emb[triplets[:, 0]] - emb[triplets[:, 1]]).pow(2).sum(1)
             an_distances = (emb[triplets[:, 0]] - emb[triplets[:, 2]]).pow(2).sum(1) 
-            target       = torch.ones((ap_distances.shape[0], 1)).view(-1)
+            target      = torch.ones((ap_distances.shape[0], 1)).view(-1)
+            if ap_distances.is_cuda:
+                target      = target.cuda()
             loss = F.soft_margin_loss(an_distances - ap_distances, target)
         else:
             loss = F.triplet_margin_loss(emb[triplets[:, 0]], 
