@@ -14,7 +14,7 @@ import pickle
 
 from models import load_model
 from dataset import CoCoDataset
-from utils import extract_embeddings
+from utils import extract_embeddings, pdist
 
 # Ignore warnings
 import warnings
@@ -57,12 +57,16 @@ def main():
 	train_embeddings, train_labels 	= extract_embeddings(train_loader, model, cuda=cuda)
 	test_embeddings, test_labels 	= extract_embeddings(test_loader, model, cuda=cuda)
 
-	clf = KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
-	clf.fit(train_embeddings, train_labels)
-	pickle.dump(clf, open(os.path.join(args.snapshot_path, '%s.pkl' % (os.path.basename(args.snapshot).split(".")[0])), 'wb'))
+	dist_mtx 	= pdist(test_embeddings, train_embeddings)
+	indices 	= np.argmax(dist_mtx, axis=1)
+	y_pred 		= train_labels[indices]
 
-	y_prob = clf.predict_proba(test_embeddings)
-	y_pred = np.argmax(y_prob, axis=1)
+	# clf = KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
+	# clf.fit(train_embeddings, train_labels)
+	# pickle.dump(clf, open(os.path.join(args.snapshot_path, '%s.pkl' % (os.path.basename(args.snapshot).split(".")[0])), 'wb'))
+	# y_prob = clf.predict_proba(test_embeddings)
+	# y_pred = np.argmax(y_prob, axis=1)
+	
 	print(classification_report(test_labels, y_pred))
 
 if __name__ == '__main__':

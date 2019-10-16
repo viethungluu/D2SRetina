@@ -14,7 +14,7 @@ def extract_embeddings(data_loader, model, embedding_size=2048, cuda=True):
             k += len(images)
     return embeddings, labels
 
-def pdist_np(emb1, emb2):
+def pdist(emb1, emb2):
     '''
     compute the eucilidean distance matrix between embeddings1 and embeddings2
     using cpu

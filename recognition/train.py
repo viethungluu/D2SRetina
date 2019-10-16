@@ -28,7 +28,7 @@ from samplers import TrainBalancedBatchSampler, TestBalancedBatchSampler
 from losses import TripletLoss
 from triplet_selectors import HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector, AllTripletSelector
 from scheduler import LrScheduler
-from utils import train_epoch, test_epoch
+from trainer import train_epoch, test_epoch
 
 # Ignore warnings
 import warnings
