@@ -17,13 +17,16 @@ class TripletLoss(nn.Module):
         """
             Calculate triplet loss using L2-distance
         """
-        ap_distances = (emb[triplets[:, 0]] - emb[triplets[:, 1]]).pow(2).sum(1)
-        an_distances = (emb[triplets[:, 0]] - emb[triplets[:, 2]]).pow(2).sum(1)
-        
         if self.soft_margin:
-            loss = F.softplus(ap_distances - an_distances)
+            ap_distances = (emb[triplets[:, 0]] - emb[triplets[:, 1]]).pow(2).sum(1)
+            an_distances = (emb[triplets[:, 0]] - emb[triplets[:, 2]]).pow(2).sum(1) 
+            target       = torch.ones((ap_distances.shape[0], 1)).view(-1)
+            loss = F.soft_margin_loss(an_distances - ap_distances, target)
         else:
-            loss = F.relu(ap_distances - an_distances + 0.1)
+            loss = F.triplet_margin_loss(emb[triplets[:, 0]], 
+                                    emb[triplets[:, 1]], 
+                                    emb[triplets[:, 2]], 
+                                    margin=0.1)
         return loss
     
     def forward(self, emb, targets):
