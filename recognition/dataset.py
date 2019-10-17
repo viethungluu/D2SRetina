@@ -52,10 +52,10 @@ class CoCoDataset(Dataset):
 		for key, value in self.classes.items():
 			self.labels[value] = key
 
-		# print(self.coco_labels)
-		# print(self.coco_labels_inverse)
-		# print(self.classes)
-		# print(self.labels)
+		print(self.coco_labels)
+		print(self.coco_labels_inverse)
+		print(self.classes)
+		print(self.labels)
 
 	def _load_annotations(self):
 		self.annotations     = {'labels': np.empty((0,)), 'bboxes': np.empty((0, 4)), 'imgIds': np.empty((0,), dtype=np.int)}

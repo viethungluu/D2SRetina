@@ -61,11 +61,11 @@ def main():
 	# indices 	= np.argmin(dist_mtx, axis=1)
 	# y_pred 	= train_labels[indices]
 
-	clf = KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
+	clf 	= KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
 	clf.fit(train_embeddings, train_labels)
 	pickle.dump(clf, open(os.path.join(args.snapshot_path, '%s.pkl' % (os.path.basename(args.snapshot).split(".")[0])), 'wb'))
-	y_prob = clf.predict_proba(test_embeddings)
-	y_pred = np.argmax(y_prob, axis=1)
+	y_prob 	= clf.predict_proba(test_embeddings)
+	y_pred 	= np.argmax(y_prob, axis=1)
 	
 	print(classification_report(test_labels, y_pred))
 
