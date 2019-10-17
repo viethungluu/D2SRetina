@@ -140,7 +140,7 @@ def main():
 	lr_scheduler = LrScheduler(args.epoch_decay_start, args.n_epoch, args.lr)
 
 	log_file = os.path.join(args.logger_dir, '%s_%s.csv' % (args.backbone, args.triplet_selector)) 
-	for epoch in range(init_epoch, args.n_epoch):
+	for epoch in range(init_epoch + 1, args.n_epoch):
 		lr_scheduler.adjust_learning_rate(optimizer, epoch, args.optim)
 		for param_group in optimizer.param_groups:
 			print("LR: ", param_group['lr'])
