@@ -32,6 +32,7 @@ def main():
 
 	parser.add_argument('--target-size', 	type=int, help='Resize/padding input image to target-size.', default=224)
 	parser.add_argument('--snapshot', 		type=str, help='', default=None)
+	parser.add_argument('--emb-size', 		type=int, help='Embedding size', default=2048)
 	parser.add_argument('--backbone', 		type=str, help='ResNet18/34/50/101/152', default='ResNet50')
 	parser.add_argument('--snapshot-path', 	type=str, help='Path to save snapshot', default='.')
 	parser.add_argument('--num-workers', 	type=int, help='Number of workers for data loader', default=1)
@@ -56,8 +57,8 @@ def main():
 	if cuda:
 		model.cuda()
 
-	train_embeddings, train_labels 	= extract_embeddings(train_loader, model, cuda=cuda)
-	test_embeddings, test_labels 	= extract_embeddings(test_loader, model, cuda=cuda)
+	train_embeddings, train_labels 	= extract_embeddings(train_loader, model, embedding_size=args.emb_size, cuda=cuda)
+	test_embeddings, test_labels 	= extract_embeddings(test_loader, model, embedding_size=args.emb_size, cuda=cuda)
 
 	dist_mtx 	= pdist(test_embeddings, train_embeddings)
 	indices 	= np.argmin(dist_mtx, axis=1)
