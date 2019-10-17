@@ -29,7 +29,7 @@ class ResNet(nn.Module):
 		self.layer1 = self._make_layer(block, 64, layers[0])
 		self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
 		self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-		self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
+		self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
 		self.avgpool = nn.AvgPool2d(14)
 		self.dropout = nn.Dropout2d(p=0.5)
 
@@ -115,4 +115,4 @@ def load_model(backbone, snapshot=None, imagenet_weights=True):
 if __name__ == '__main__':
 	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 	debug_model = load_model("ResNet50").to(device)
-	summary(debug_model, (3, 64, 64))
+	summary(debug_model, (3, 224, 224))
