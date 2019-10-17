@@ -23,7 +23,7 @@ class TripletLoss(nn.Module):
             target      = torch.ones((ap_distances.shape[0], 1)).view(-1)
             if ap_distances.is_cuda:
                 target      = target.cuda()
-            loss = F.soft_margin_loss(an_distances - ap_distances, target)
+            loss = F.soft_margin_loss(ap_distances - an_distances, target)
         else:
             loss = F.triplet_margin_loss(emb[triplets[:, 0]], 
                                     emb[triplets[:, 1]], 
