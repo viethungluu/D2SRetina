@@ -51,7 +51,7 @@ parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--coco-path', 		type=str, help='', default='')
 parser.add_argument('--target-size', 	type=int, help='Resize/padding input image to target-size.', default=224)
 parser.add_argument('--num-workers', 	type=int, help='Number of workers for data loader', default=1)
-parser.add_argument('--random-erasing',	help='Use soft margin.', action='store_true')
+parser.add_argument('--soft-margin',	help='Use soft margin.', action='store_true')
 # model params
 parser.add_argument('--backbone', type=str, help='ResNet18/34/50/101/152', default='ResNet50')
 parser.add_argument('--optim', help='Optimizer to use: SGD or Adam', default='Adam')
