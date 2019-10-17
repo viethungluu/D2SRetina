@@ -109,6 +109,13 @@ def load_model(backbone, snapshot=None, imagenet_weights=True):
 		if imagenet_weights:
 			# init a new model with ImageNet weights
 			model.load_state_dict(model_zoo.load_url(model_urls[backbone]), strict=False)
+			# freeze first 6 block in resnet
+			ct = 0
+			for child in model.children():
+				ct += 1
+				if ct < 7:
+					for param in child.parameters():
+						param.requires_grad = False
 	
 	return model, optim_state_dict, init_epoch
 
@@ -117,3 +124,4 @@ if __name__ == '__main__':
 	debug_model, _, _ 	= load_model("ResNet50")
 	debug_model 		= debug_model.to(device)
 	summary(debug_model, (3, 224, 224))
+	print(len(debug_model.children()))
