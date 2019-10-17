@@ -124,4 +124,8 @@ if __name__ == '__main__':
 	debug_model, _, _ 	= load_model("ResNet50")
 	debug_model 		= debug_model.to(device)
 	summary(debug_model, (3, 224, 224))
-	print(len(debug_model.children()))
+
+	ct = 0
+	for child in model.children():
+		ct += 1
+	print(ct)
