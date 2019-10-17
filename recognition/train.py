@@ -30,6 +30,16 @@ from triplet_selectors import HardestNegativeTripletSelector, RandomNegativeTrip
 from scheduler import LrScheduler
 from trainer import train_epoch, test_epoch
 
+def makedirs(path):
+	# Intended behavior: try to create the directory,
+	# pass if the directory exists already, fails otherwise.
+	# Meant for Python 2.7/3.n compatibility.
+	try:
+		os.makedirs(path)
+	except OSError:
+		if not os.path.isdir(path):
+			raise
+
 # Ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -63,6 +73,9 @@ parser.add_argument('--snapshot-path', 	type=str, help='Path to save snapshot', 
 parser.add_argument('--logger-dir', 	type=str, help='Path to save log', default='.')
 
 args = parser.parse_args()
+
+makedirs(args.logger_dir)
+makedirs(args.snapshot_path)
 
 cuda = torch.cuda.is_available()
 # Set up data loaders parameters
