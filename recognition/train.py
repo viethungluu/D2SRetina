@@ -91,7 +91,7 @@ if cuda:
 	torch.cuda.manual_seed(args.seed)
 	
 def main():
-	transforms_args = [transforms.ToTensor(), transforms.Normalize([127.5, 127.5, 127.5], [1.0, 1.0, 1.0])]
+	transforms_args = [transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
 	train_dataset 	= CoCoDataset(args.coco_path, "training", target_size=args.target_size, transform=transforms.Compose(transforms_args + [RandomErasing(probability=args.p, sh=args.sh, r1=args.r1)]))
 	test_dataset 	= CoCoDataset(args.coco_path, "validation_wo_occlusion", target_size=args.target_size, transform=transforms.Compose(transforms_args))
 
