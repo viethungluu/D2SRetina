@@ -5,15 +5,15 @@ import torch
 def extract_embeddings(data_loader, model, embedding_size=2048, cuda=True):
     with torch.no_grad():
         model.eval()
-        embeddings = np.zeros((len(data_loader.dataset), embedding_size))
-        labels = np.zeros(len(data_loader.dataset))
+        embeddings  = np.zeros((len(data_loader.dataset), embedding_size))
+        labels      = np.zeros(len(data_loader.dataset))
         k = 0
         for images, target in data_loader:
             if cuda:
                 images = images.cuda()
-            embeddings[k: k+len(images)] = model.forward(images).data.cpu().numpy()
-            labels[k: k+len(images)] = target.numpy()
-            k += len(images)
+            embeddings[k: k + len(target)]  = model.forward(images).data.cpu().numpy()
+            labels[k:  k + len(target)]     = target.numpy()
+            k += len(target)
     return embeddings, labels
 
 def pdist(emb1, emb2):
