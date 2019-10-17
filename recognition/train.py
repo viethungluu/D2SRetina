@@ -29,6 +29,7 @@ from losses import TripletLoss
 from triplet_selectors import HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector, AllTripletSelector
 from scheduler import LrScheduler
 from trainer import train_epoch, test_epoch
+from random_erasing import RandomErasing
 
 def makedirs(path):
 	# Intended behavior: try to create the directory,
@@ -47,18 +48,21 @@ warnings.filterwarnings("ignore")
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1)
 # dataset params
-parser.add_argument('--coco-path', type=str, help='', default='')
-parser.add_argument('--target-size', type=int, help='Resize/padding input image to target-size.', default=224)
-parser.add_argument('--num-workers', type=int, help='Number of workers for data loader', default=1)
+parser.add_argument('--coco-path', 		type=str, help='', default='')
+parser.add_argument('--target-size', 	type=int, help='Resize/padding input image to target-size.', default=224)
+parser.add_argument('--num-workers', 	type=int, help='Number of workers for data loader', default=1)
+parser.add_argument('--random-erasing',	help='Use soft margin.', action='store_true')
 # model params
 parser.add_argument('--backbone', type=str, help='ResNet18/34/50/101/152', default='ResNet50')
 parser.add_argument('--optim', help='Optimizer to use: SGD or Adam', default='Adam')
 # triplet params
-parser.add_argument('--soft-margin', 		help='Use soft margin.', action='store_true')
 parser.add_argument('--K', 					type=int, 	default=4, help="Number of samples per class for each mini batch. batch_size = K x P")
 parser.add_argument('--P', 					type=int, 	default=8, help="Number of classes for each mini batch. batch_size = K x P")
 parser.add_argument('--triplet-selector',	type=str, 	default='all', help='Triplet sampling strategy: "all", "hard", "semi", "random". Default: "all"')
-
+# data augmentation
+parser.add_argument('--p', 					default=0, 		type=float, help='Random Erasing probability')
+parser.add_argument('--sh', 				default=0.4, 	type=float, help='max erasing area')
+parser.add_argument('--r1', 				default=0.3, 	type=float, help='aspect of erasing area')
 # training params
 parser.add_argument('--lr', 				type=float, default=1e-3)
 parser.add_argument('--n-epoch', 			type=int, 	default=100)
@@ -88,8 +92,7 @@ if cuda:
 	
 def main():
 	transforms_args = [transforms.ToTensor(), transforms.Normalize([127.5, 127.5, 127.5], [1.0, 1.0, 1.0])]
-
-	train_dataset 	= CoCoDataset(args.coco_path, "training", target_size=args.target_size, transform=transforms.Compose(transforms_args))
+	train_dataset 	= CoCoDataset(args.coco_path, "training", target_size=args.target_size, transform=transforms.Compose(transforms_args + [RandomErasing(probability=args.p, sh=args.sh, r1=args.r1)]))
 	test_dataset 	= CoCoDataset(args.coco_path, "validation_wo_occlusion", target_size=args.target_size, transform=transforms.Compose(transforms_args))
 
 	train_batch_sampler = TrainBalancedBatchSampler(torch.from_numpy(np.array(train_dataset.all_targets())),

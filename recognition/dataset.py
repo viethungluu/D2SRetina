@@ -19,6 +19,7 @@ class CoCoDataset(Dataset):
 		self.data_dir 		= data_dir
 		self.set_name 		= set_name
 		self.target_size 	= target_size
+		self.random_erasing = random_erasing
 
 		print("Reading dataset from", os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
 		self.coco 		= COCO(os.path.join(data_dir, 'annotations', 'D2S_' + set_name + '.json'))
@@ -91,6 +92,7 @@ class CoCoDataset(Dataset):
 		image 		= np.asarray(Image.open(path).convert('RGB'))
 
 		image 		= image[int(bbox[1]): int(bbox[3]), int(bbox[0]): int(bbox[2]), ...]
+
 		# resize image to target_size
 		image, _ 	 = resize_image(image, self.target_size)
 
