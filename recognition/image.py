@@ -37,6 +37,9 @@ def resize_image(img, target_size=224):
 
     # rescale image
     result  = np.zeros((target_size, target_size, img.shape[2]), dtype=np.uint8)
-    result[: img.shape[0], : img.shape[1], ...]  = img
+    
+    start_y = (target_size - img.shape[0]) // 2
+    start_x = (target_size - img.shape[1]) // 2
+    result[start_y: start_y + img.shape[0], start_x: start_x + img.shape[1]] = img
 
     return result, scale
