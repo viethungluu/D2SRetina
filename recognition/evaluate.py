@@ -74,7 +74,7 @@ def main():
 	plt.figure(figsize=(20, 20))
 	columns 	= 4
 	rows	 	= 4
-	for i in range(rows):
+	for i in range(rows * 2):
 		# plot test image
 		index 	= np.random.randint(len(test_dataset))
 		image, label   = test_dataset._load_image(index)
