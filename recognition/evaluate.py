@@ -90,7 +90,7 @@ def main():
 		ax.title.set_text(train_dataset.coco_label_to_name(train_dataset.label_to_coco_label(gt_label)))		
 	
 	plt.tight_layout()
-	plt.savefig("debug_regcognition.png")
+	plt.savefig("evaluation.png")
 
 if __name__ == '__main__':
 	main()
