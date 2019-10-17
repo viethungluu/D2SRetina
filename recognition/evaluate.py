@@ -78,14 +78,14 @@ def main():
 		# plot test image
 		index 	= np.random.randint(len(test_dataset))
 		image, label   = test_dataset._load_image(index)
-		ax 		= plt.subplot(rows, columns, i * 2)
+		ax 		= plt.subplot(rows, columns, i * 2 + 1)
 		ax.imshow(image)
 		ax.title.set_text(test_dataset.coco_label_to_name(test_dataset.label_to_coco_label(label)))
 
 		# plot most similar image from train_dataset
 		gt_index = indices[index]
 		gt_image, gt_label = train_dataset._load_image(gt_index)
-		ax 		= plt.subplot(rows, columns, i * 2 + 1)
+		ax 		= plt.subplot(rows, columns, i * 2 + 2)
 		ax.imshow(gt_image)
 		ax.title.set_text(train_dataset.coco_label_to_name(train_dataset.label_to_coco_label(gt_label)))		
 	
