@@ -126,6 +126,6 @@ if __name__ == '__main__':
 	summary(debug_model, (3, 224, 224))
 
 	ct = 0
-	for child in model.children():
+	for child in debug_model.children():
 		ct += 1
 	print(ct)
