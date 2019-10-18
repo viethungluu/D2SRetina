@@ -67,7 +67,7 @@ def main():
 	# embeddings_pca =  pca.fit_transform(embeddings)
 
 	embeddings_tsne 	= TSNE(n_components=2, metric="euclidean").fit_transform(embeddings)
-	plot_embeddings(embeddings_tsne, labels, dataset.num_classes())
+	plot_embeddings(embeddings_tsne, labels, 10)
 
 if __name__ == '__main__':
 	main()
