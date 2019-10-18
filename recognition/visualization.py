@@ -29,7 +29,7 @@ def plot_embeddings(embeddings, targets, n_classes, xlim=None, ylim=None):
 	plt.figure(figsize=(10, 10))
 	for i in range(n_classes):
 		inds = np.where(targets==i)[0]
-		plt.scatter(embeddings[inds, 0], embeddings[inds, 1], alpha=0.5)
+		plt.scatter(embeddings[inds, 0], embeddings[inds, 1], alpha=0.5, label="%d" % i)
 	if xlim:
 		plt.xlim(xlim[0], xlim[1])
 	if ylim:
