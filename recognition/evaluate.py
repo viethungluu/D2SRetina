@@ -60,15 +60,15 @@ def main():
 	train_embeddings, train_labels 	= extract_embeddings(train_loader, model, embedding_size=args.emb_size, cuda=cuda)
 	test_embeddings, test_labels 	= extract_embeddings(test_loader, model, embedding_size=args.emb_size, cuda=cuda)
 
-	dist_mtx 	= pdist(test_embeddings, train_embeddings)
-	indices 	= np.argmin(dist_mtx, axis=1)
-	y_pred 		= train_labels[indices]
+	# dist_mtx 	= pdist(test_embeddings, train_embeddings)
+	# indices 	= np.argmin(dist_mtx, axis=1)
+	# y_pred 		= train_labels[indices]
 
-	# clf 	= KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
-	# clf.fit(train_embeddings, train_labels)
-	# pickle.dump(clf, open(os.path.join(args.snapshot_path, '%s.pkl' % (os.path.basename(args.snapshot).split(".")[0])), 'wb'))
-	# y_prob 	= clf.predict_proba(test_embeddings)
-	# y_pred 	= np.argmax(y_prob, axis=1)
+	clf 	= KNeighborsClassifier(n_neighbors=args.n_neighbors, metric='l2', n_jobs=-1, weights="distance")
+	clf.fit(train_embeddings, train_labels)
+	pickle.dump(clf, open(os.path.join(args.snapshot_path, '%s.pkl' % (os.path.basename(args.snapshot).split(".")[0])), 'wb'))
+	y_prob 	= clf.predict_proba(test_embeddings)
+	y_pred 	= np.argmax(y_prob, axis=1)
 	
 	print(classification_report(test_labels, y_pred))
 
