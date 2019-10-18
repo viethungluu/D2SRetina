@@ -44,7 +44,7 @@ def main():
 	# Set up data loaders parameters
 	kwargs = {'num_workers': args.num_workers, 'pin_memory': True} if cuda else {} #
 
-	transforms_args = [transforms.ToTensor(), transforms.Normalize([127.5, 127.5, 127.5], [1.0, 1.0, 1.0])]
+	transforms_args = [transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
 	
 	train_dataset	= CoCoDataset(args.coco_path, args.train_set_name, target_size=args.target_size, transform=transforms.Compose(transforms_args))
 	test_dataset	= CoCoDataset(args.coco_path, args.test_set_name, target_size=args.target_size, transform=transforms.Compose(transforms_args))
