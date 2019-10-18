@@ -44,6 +44,7 @@ def main():
 	parser.add_argument('--set-name', 		type=str, help='', default='')
 	parser.add_argument('--target-size', 	type=int, help='Resize/padding input image to target-size.', default=224)
 	parser.add_argument('--snapshot', 		type=str, help='', default=None)
+	parser.add_argument('--emb-size', 		type=int, help='Embedding size', default=2048)
 	parser.add_argument('--backbone', 		type=str, help='ResNet18/34/50/101/152', default='ResNet50')
 	parser.add_argument('--num-workers', 	type=int, help='Number of workers for data loader', default=1)
 	args = parser.parse_args()
@@ -60,7 +61,7 @@ def main():
 	if cuda:
 		model.cuda()
 
-	embeddings, labels 	= extract_embeddings(data_loader, model, cuda=cuda)
+	embeddings, labels 	= extract_embeddings(data_loader, model, embedding_size=args.emb_size, cuda=cuda)
 	# using PCA to reduce a reasonable amount of dimensionality first
 	pca = PCA(n_components=50)
 	embeddings_pca =  pca.fit_transform(embeddings)
