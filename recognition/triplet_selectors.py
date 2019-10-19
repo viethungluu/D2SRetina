@@ -38,9 +38,9 @@ class FunctionAllTripletSelector(TripletSelector):
             label_indices = np.where(label_mask)[0]
             if len(label_indices) < 2:
                 continue
-            
-            negative_indices = np.where(np.logical_not(label_mask))[0]
             anchor_positives = list(combinations(label_indices, 2))  # All anchor-positive pairs
+
+            negative_indices = np.where(np.logical_not(label_mask))[0]
 
             # Add all negatives for all positive pairs
             temp_triplets = [[anchor_positive[0], anchor_positive[1], neg_ind] for anchor_positive in anchor_positives
@@ -60,12 +60,6 @@ def random_hard_negative(loss_values):
 def semihard_negative(loss_values, margin):
     semihard_negatives = np.where(np.logical_and(loss_values < margin, loss_values > 0))[0]
     return np.random.choice(semihard_negatives) if len(semihard_negatives) > 0 else None
-
-def _apply_margin(p, n, soft_margin):
-    if soft_margin:
-        return F.softplus(p - n)
-    else:
-        return F.relu(p - n + 0.1)
 
 class FunctionNegativeTripletSelector(TripletSelector):
     """
@@ -92,24 +86,19 @@ class FunctionNegativeTripletSelector(TripletSelector):
 
         labels = labels.cpu().data.numpy()
         triplets = []
-
         for label in set(labels):
             label_mask = (labels == label)
             label_indices = np.where(label_mask)[0]
             if len(label_indices) < 2:
                 continue
-            
-            negative_indices = np.where(np.logical_not(label_mask))[0]
-            anchor_positives = list(combinations(label_indices, 2))  # All anchor-positive pairs
-            anchor_positives = np.array(anchor_positives)
+            anchor_positives    = np.array(combinations(label_indices, 2))  # All anchor-positive pairs
+            ap_distances        = distance_matrix[anchor_positives[:, 0], anchor_positives[:, 1]]
 
-            ap_distances = distance_matrix[anchor_positives[:, 0], anchor_positives[:, 1]]
+            negative_indices    = np.where(np.logical_not(label_mask))[0]
+
             for anchor_positive, ap_distance in zip(anchor_positives, ap_distances):
-                an_distances = distance_matrix[torch.LongTensor(np.array([anchor_positive[0]])), torch.LongTensor(negative_indices)]
-                
-                loss = _apply_margin(ap_distance, an_distances, self.soft_margin)
-
-                hard_negative = self.negative_selection_fn(loss.cpu().data.numpy())
+                an_distances    = distance_matrix[torch.LongTensor(np.array([anchor_positive[0]])), torch.LongTensor(negative_indices)]
+                hard_negative   = self.negative_selection_fn((ap_distances - an_distances).cpu().data.numpy())
                 if hard_negative is not None:
                     hard_negative = negative_indices[hard_negative]
                     triplets.append([anchor_positive[0], anchor_positive[1], hard_negative])
@@ -119,18 +108,15 @@ class FunctionNegativeTripletSelector(TripletSelector):
         return torch.LongTensor(triplets)
 
 
-def HardestNegativeTripletSelector(soft_margin, cpu=False): return FunctionNegativeTripletSelector(soft_margin=soft_margin,
-                                                                                 negative_selection_fn=hardest_negative,
+def HardestNegativeTripletSelector(cpu=False): return FunctionNegativeTripletSelector(negative_selection_fn=hardest_negative,
                                                                                  cpu=cpu)
 
 
-def RandomNegativeTripletSelector(soft_margin, cpu=False): return FunctionNegativeTripletSelector(soft_margin=soft_margin,
-                                                                                negative_selection_fn=random_hard_negative,
+def RandomNegativeTripletSelector(cpu=False): return FunctionNegativeTripletSelector(negative_selection_fn=random_hard_negative,
                                                                                 cpu=cpu)
 
 
-def SemihardNegativeTripletSelector(soft_margin, cpu=False): return FunctionNegativeTripletSelector(soft_margin=soft_margin,
-                                                                                  negative_selection_fn=lambda x: semihard_negative(x, margin),
+def SemihardNegativeTripletSelector(margin=0.1, cpu=False): return FunctionNegativeTripletSelector(negative_selection_fn=lambda x: semihard_negative(x, margin),
                                                                                   cpu=cpu)
 
 def AllTripletSelector(): return FunctionAllTripletSelector()

@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -24,16 +25,16 @@ warnings.filterwarnings("ignore")
 
 cuda = torch.cuda.is_available()
 
-def plot_embeddings(embeddings, targets, n_classes, xlim=None, ylim=None):
+def plot_embeddings(ds, tsne, targets):
 	import matplotlib.pyplot as plt
-	plt.figure(figsize=(10, 10))
-	for i in range(n_classes):
-		inds = np.where(targets==i)[0]
-		plt.scatter(embeddings[inds, 0], embeddings[inds, 1], alpha=0.5, label="%d" % i)
-	if xlim:
-		plt.xlim(xlim[0], xlim[1])
-	if ylim:
-		plt.ylim(ylim[0], ylim[1])
+	# plt.figure(figsize=(20, 20))
+	fig, ax = plt.subplots()
+	for label in set(targets)
+		inds = np.where(targets==label)[0]
+		# randomly select 10 image from each class
+		for i in range(min(10, len(inds)))
+			ab = AnnotationBbox(OffsetImage(ds._load_image(inds[i])), (tsne[i, 0], tsne[i, 1]), frameon=False)
+			ax.add_artist(ab)
 	
 	plt.tight_layout()
 	plt.savefig("embeddings.png")
@@ -66,8 +67,8 @@ def main():
 	# pca = PCA(n_components=50)
 	# embeddings_pca =  pca.fit_transform(embeddings)
 
-	embeddings_tsne 	= TSNE(n_components=2, metric="euclidean").fit_transform(embeddings)
-	plot_embeddings(embeddings_tsne, labels, 10)
+	tsne 	= TSNE(n_components=2, metric="euclidean").fit_transform(embeddings)
+	plot_embeddings(dataset, tsne, labels)
 
 if __name__ == '__main__':
 	main()

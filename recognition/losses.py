@@ -17,16 +17,13 @@ class TripletLoss(nn.Module):
         """
             Calculate triplet loss using L2-distance
         """
-        if self.soft_margin:
-            ap_distances = (emb[triplets[:, 0]] - emb[triplets[:, 1]]).pow(2).sum(1)
-            an_distances = (emb[triplets[:, 0]] - emb[triplets[:, 2]]).pow(2).sum(1) 
+        ap_distances = (emb[triplets[:, 0]] - emb[triplets[:, 1]]).pow(2).sum(1)
+        an_distances = (emb[triplets[:, 0]] - emb[triplets[:, 2]]).pow(2).sum(1) 
 
+        if self.soft_margin:
             loss = F.softplus(ap_distances - an_distances)
         else:
-            loss = F.triplet_margin_loss(emb[triplets[:, 0]], 
-                                    emb[triplets[:, 1]], 
-                                    emb[triplets[:, 2]], 
-                                    margin=0.1)
+            loss = F.Relu(ap_distances - an_distances + 0.1)
         return loss
     
     def forward(self, emb, targets):
