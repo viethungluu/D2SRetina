@@ -121,7 +121,7 @@ def load_model(backbone, snapshot=None, imagenet_weights=True):
 
 if __name__ == '__main__':
 	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-	debug_model, _, _ 	= load_model("ResNet50")
+	debug_model, _, _ 	= load_model("ResNet18")
 	debug_model 		= debug_model.to(device)
 	summary(debug_model, (3, 224, 224))
 
