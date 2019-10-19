@@ -53,8 +53,10 @@ parser.add_argument('--target-size', 	type=int, help='Resize/padding input image
 parser.add_argument('--num-workers', 	type=int, help='Number of workers for data loader', default=1)
 parser.add_argument('--soft-margin',	help='Use soft margin.', action='store_true')
 # model params
-parser.add_argument('--backbone', type=str, help='ResNet18/34/50/101/152', default='ResNet50')
-parser.add_argument('--optim', help='Optimizer to use: SGD or Adam', default='Adam')
+parser.add_argument('--backbone', 		type=str, help='ResNet18/34/50/101/152', default='ResNet50')
+parser.add_argument('--optim', 			help='Optimizer to use: SGD or Adam', default='Adam')
+parser.add_argument('--freeze',			help='Freeze first blocks of Resnet model.', action='store_true')
+parser.add_argument('--imagenet-weights', help='Initialize model with ImageNet weights', action='store_true')
 # triplet params
 parser.add_argument('--K', 					type=int, 	default=4, help="Number of samples per class for each mini batch. batch_size = K x P")
 parser.add_argument('--P', 					type=int, 	default=8, help="Number of classes for each mini batch. batch_size = K x P")
@@ -110,7 +112,10 @@ def main():
 	test_loader 	= DataLoader(test_dataset, 	batch_sampler=test_batch_sampler, **kwargs)
 
 	# init model
-	model, optim_state_dict, init_epoch = load_model(args.backbone, args.snapshot)
+	model, optim_state_dict, init_epoch = load_model(args.backbone, 
+												args.snapshot, 
+												imagenet_weights=args.imagenet_weights, 
+												freeze=args.freeze)
 	print("Resume training from epoch", init_epoch)
 	if cuda:
 		model.cuda()
